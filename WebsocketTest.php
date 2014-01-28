@@ -8,7 +8,7 @@ class WebsocketTest
     }
 
     public function start() {
-        for ($i=0; $i<=10000; $i++) {
+        for ($i=0; $i<=1000; $i++) {
             $client = stream_socket_client ($this->config['websocket'], $errorNumber, $errorString, -1);
 
             if (!$client) {
@@ -46,9 +46,5 @@ class WebsocketTest
                 }
             }
         }
-    }
-
-    public function stop() {
-
     }
 }
