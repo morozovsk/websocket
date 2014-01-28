@@ -14,16 +14,20 @@ abstract class WebsocketMaster extends WebsocketGeneric
         pcntl_signal_dispatch();*/
 
         //создаём сокет для обработки сообщений от скриптов
-        $service = stream_socket_server($this->localsocket, $errorNumber, $errorString);
+        if ($this->localsocket) {
+            $service = stream_socket_server($this->localsocket, $errorNumber, $errorString);
 
-        if (!$service) {
-            die("error: stream_socket_server: $errorString ($errorNumber)\r\n");
+            if (!$service) {
+                die("error: stream_socket_server: $errorString ($errorNumber)\r\n");
+            }
         }
 
         while (true) {
             //подготавливаем массив всех сокетов, которые нужно обработать
             $read = $this->clients;
-            $read[] = $service;
+            if ($this->localsocket) {
+                $read[] = $service;
+            }
 
             $write = array();
 
@@ -37,7 +41,7 @@ abstract class WebsocketMaster extends WebsocketGeneric
 
             stream_select($read, $write, $except = null, null);//обновляем массив сокетов, которые можно обработать
 
-            if (in_array($service, $read)) { //на мастер пришёл запрос от нового клиента
+            if ($this->localsocket && in_array($service, $read)) { //на мастер пришёл запрос от нового клиента
                 if ($client = stream_socket_accept($service, -1)) { //подключаемся к нему
                     $this->clients[intval($client)] = $client;
                 }

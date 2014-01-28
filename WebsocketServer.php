@@ -23,7 +23,7 @@ class WebsocketServer
         if ($pid) {//мастер
             file_put_contents($this->config['pid'], $pid);
             fclose($server);//мастер не будет обрабатывать входящие соединения на основном сокете
-            $WebsocketMaster = new WebsocketMasterHandler($workers, $this->config['localsocket']);//мастер будет обрабатывать сообщения от скриптов и пересылать их в воркеры
+            $WebsocketMaster = new WebsocketMasterHandler($workers, @$this->config['localsocket']);//мастер будет обрабатывать сообщения от скриптов и пересылать их в воркеры
             $WebsocketMaster->start();
         } else {//воркер
             $WebsocketHandler = new WebsocketWorkerHandler($server, $master);
