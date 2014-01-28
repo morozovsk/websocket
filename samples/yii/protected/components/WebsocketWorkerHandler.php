@@ -16,10 +16,6 @@ class WebsocketWorkerHandler extends WebsocketWorker
             return;
         }
 
-        if (!mb_check_encoding($data['payload'], 'utf-8')) {
-            return;
-        }
-
         //var_export($data);
         //шлем всем сообщение, о том, что пишет один из клиентов
         //echo $data['payload'] . "\n";

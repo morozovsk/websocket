@@ -74,7 +74,7 @@ abstract class WebsocketWorker extends WebsocketGeneric
                             continue;
                         }
 
-                        while ($data = $this->decode($client)) {//декодируем буфер (в нём может быть несколько сообщений)
+                        while (($data = $this->decode($client)) && mb_check_encoding($data['payload'], 'utf-8')) {//декодируем буфер (в нём может быть несколько сообщений)
                             $this->onMessage($client, $data);//вызываем пользовательский сценарий
                         }
                     }
