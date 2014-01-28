@@ -7,7 +7,7 @@ if (empty($argv[1]) || !in_array($argv[1], array('start', 'stop'))) {
 
 $config = array(
     'websocket' => 'tcp://127.0.0.1:8000',
-    'workers' => 16,
+    'workers' => 1,
     'pid' => '/tmp/websocket.pid'
 );
 
