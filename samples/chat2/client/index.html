@@ -20,6 +20,7 @@
                 ws.onclose = function() {
                     $("#chat").append("<p>Система: соединение закрыто, пытаюсь переподключиться</p>");
                     $("#login p").remove();
+                    $('#login span').text('0');
                     setTimeout(wsStart, 1000);
                 }
                 ws.onmessage = function(evt) {

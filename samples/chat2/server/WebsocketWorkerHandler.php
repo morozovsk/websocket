@@ -53,7 +53,9 @@ class WebsocketWorkerHandler extends WebsocketWorker
             if ($packet['data']['result']) {
                 $this->logins[ $packet['data']['login'] ] = $packet['data']['clientId'];
                 $this->sendToClients('login', $packet['data']['login']);
-                $this->sendToClient($this->clients[ $packet['data']['clientId'] ], 'message', 'Система: вы вошли в чат под именем ' . $packet['data']['login']);
+                if ($packet['data']['clientId']) {
+                    $this->sendToClient($this->clients[ $packet['data']['clientId'] ], 'message', 'Система: вы вошли в чат под именем ' . $packet['data']['login']);
+                }
             } else {
                 $this->sendToClient($this->clients[ $packet['data']['clientId'] ], 'message', 'Система: выбранное вами имя занято, попробуйте другое.');
             }
