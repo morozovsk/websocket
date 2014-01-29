@@ -44,7 +44,7 @@ class WebsocketServer
                 die("error: pcntl_fork\r\n");
             } elseif ($pid) { //мастер
                 fclose($pair[0]);
-                $workers[$pid] = $pair[1];//один из пары будет в мастере
+                $workers[intval($pair[1])] = $pair[1];//один из пары будет в мастере
             } else { //воркер
                 fclose($pair[1]);
                 $master = $pair[0];//второй в воркере
