@@ -14,21 +14,44 @@
 
             function wsStart() {
                 ws = new WebSocket("ws://127.0.0.1:8000/");
-                ws.onopen = function() { $("#chat").append("<p>система: соединение открыто</p>"); };
-                ws.onclose = function() { $("#chat").append("<p>система: соединение закрыто, пытаюсь переподключиться</p>"); setTimeout(wsStart, 1000);};
-                ws.onmessage = function(evt) { $("#chat").append("<p>"+evt.data+"</p>"); $('#chat').scrollTop($('#chat')[0].scrollHeight);};
+                ws.onopen = function() { $("#chat").append("<p>Система: соединение открыто. Чтобы общаться в чате введите ник, под которым вы будете отображаться. Можно использовать английские буквы и цифры. Ник не должен превышать 10 символов.</p>"); }
+                ws.onclose = function() { $("#chat").append("<p>Система: соединение закрыто, пытаюсь переподключиться</p>"); setTimeout(wsStart, 1000);}
+                ws.onmessage = function(evt) {
+                    var pack = JSON.parse(evt.data);
+                    if (pack.cmd == 'message') {
+                        $("#chat").append("<p>"+pack.data+"</p>");
+                        $('#chat').scrollTop($('#chat')[0].scrollHeight);
+                    } else if (pack.cmd == 'login') {
+                        $("#login").append("<p id='l_" + pack.data + "'>" + pack.data + "</p>");
+                        $('#login').scrollTop($('#login')[0].scrollHeight);
+                    } else if (pack.cmd == 'logout') {
+                        $("#l_" + pack.data).remove();
+                        $('#login').scrollTop($('#login')[0].scrollHeight);
+                    } else if (pack.cmd == 'logins') {
+                        pack.data.forEach(function(login) {
+                            $("#login").append("<p id='l_" + login + "'>" + login + "</p>");
+                        })
+                        $('#login').scrollTop($('#login')[0].scrollHeight);
+                    }
+                }
             }
 
             wsStart();
 
             $('#chat').height($(window).height() - 80);
+            $('#login').height($(window).height() - 80);
         });
 
     </script>
 </head>
 
 <body>
-    <div id="chat" style="overflow: auto;"></div>
+<div class="container-fluid">
+    <div class="row">
+        <div id="chat" style="overflow: auto;float: left;width: 85%;"></div>
+        <div id="login" style="overflow: auto;float: left; width: 15%;"><b>Пользователи:</b></div>
+    </div>
+</div>
     <div class="navbar-fixed-bottom">
         <form onsubmit="ws.send($('input').val()); $('input').val(''); return false; ">
             <input id="input" type="text" class="form-control" placeholder="Text input" style="width: 100%;" maxlength="140" autocomplete="off">

@@ -3,11 +3,12 @@
 //пример реализации чата
 class WebsocketWorkerHandler extends WebsocketWorker
 {
-    const GUEST_MESSAGE = 'Чтобы общаться в чате введите ник, под которым вы будете отображаться. Можно использовать английские буквы и цифры. Ник не должен превышать 10 символов. ';
     protected $logins = array();
 
     protected function onOpen($client) {//вызывается при соединении с новым клиентом
-        $this->sendToClient($client, 'message', self::GUEST_MESSAGE);
+        if ($this->logins) {
+            $this->sendToClient($client, 'logins', array_keys($this->logins));
+        }
     }
 
     protected function onClose($client) {//вызывается при закрытии соединения клиентом
