@@ -31,13 +31,13 @@ class WebsocketWorkerHandler extends WebsocketWorker
         } else {
             if (preg_match('/^[a-zA-Z0-9]{1,10}$/', $data['payload'], $match)) {
                 if (isset($this->logins[$match[0]])) {
-                    $this->sendToClient($client, 'message', 'выбранное вами имя занято, попробуйте другое');
+                    $this->sendToClient($client, 'message', 'Система: выбранное вами имя занято, попробуйте другое.');
                 } else {
                     $this->logins[$match[0]] = null;
                     $this->sendToMaster('login', array('login' => $match[0], 'clientId' => intval($client)));
                 }
             } else {
-                $this->sendToClient($client, 'message', 'ошибка при выборе имени');
+                $this->sendToClient($client, 'message', 'Система: ошибка при выборе имени. В имени можно использовать английские буквы и цифры. Имя не должно превышать 10 символов.');
             }
         }
         //var_export($data);
@@ -53,8 +53,9 @@ class WebsocketWorkerHandler extends WebsocketWorker
             if ($packet['data']['result']) {
                 $this->logins[ $packet['data']['login'] ] = $packet['data']['clientId'];
                 $this->sendToClients('login', $packet['data']['login']);
+                $this->sendToClient($this->clients[ $packet['data']['clientId'] ], 'message', 'Система: вы вошли в чат под именем ' . $packet['data']['login']);
             } else {
-                $this->sendToClient($this->clients[ $packet['data']['clientId'] ], 'message', 'выбранное вами имя занято, попробуйте другое');
+                $this->sendToClient($this->clients[ $packet['data']['clientId'] ], 'message', 'Система: выбранное вами имя занято, попробуйте другое.');
             }
         } elseif ($packet['cmd'] == 'logout') {
             unset($this->logins[$packet['data']['login']]);

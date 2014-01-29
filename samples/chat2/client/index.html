@@ -13,9 +13,15 @@
         $(function(){
 
             function wsStart() {
-                ws = new WebSocket("ws://127.0.0.1:8000/");
-                ws.onopen = function() { $("#chat").append("<p>Система: соединение открыто. Чтобы общаться в чате введите ник, под которым вы будете отображаться. Можно использовать английские буквы и цифры. Ник не должен превышать 10 символов.</p>"); }
-                ws.onclose = function() { $("#chat").append("<p>Система: соединение закрыто, пытаюсь переподключиться</p>"); setTimeout(wsStart, 1000);}
+                ws = new WebSocket("ws://127.0.0.1:8001/");
+                ws.onopen = function() {
+                    $("#chat").append("<p>Система: соединение открыто. Чтобы общаться в чате введите имя, под которым вы будете отображаться. В имени можно использовать английские буквы и цифры. Имя не должно превышать 10 символов.</p>");
+                }
+                ws.onclose = function() {
+                    $("#chat").append("<p>Система: соединение закрыто, пытаюсь переподключиться</p>");
+                    $("#login p").remove();
+                    setTimeout(wsStart, 1000);
+                }
                 ws.onmessage = function(evt) {
                     var pack = JSON.parse(evt.data);
                     if (pack.cmd == 'message') {
@@ -23,6 +29,7 @@
                         $('#chat').scrollTop($('#chat')[0].scrollHeight);
                     } else if (pack.cmd == 'login') {
                         $("#login").append("<p id='l_" + pack.data + "'>" + pack.data + "</p>");
+                        $('#login span').text($('#login p').size());
                         $('#login').scrollTop($('#login')[0].scrollHeight);
                     } else if (pack.cmd == 'logout') {
                         $("#l_" + pack.data).remove();
@@ -31,6 +38,7 @@
                         pack.data.forEach(function(login) {
                             $("#login").append("<p id='l_" + login + "'>" + login + "</p>");
                         })
+                        $('#login span').text($('#login p').size());
                         $('#login').scrollTop($('#login')[0].scrollHeight);
                     }
                 }
@@ -48,8 +56,8 @@
 <body>
 <div class="container-fluid">
     <div class="row">
-        <div id="chat" style="overflow: auto;float: left;width: 85%;"></div>
-        <div id="login" style="overflow: auto;float: left; width: 15%;"><b>Пользователи:</b></div>
+        <div id="chat" style="overflow: auto;float: left;width: 85%;"><p>Система: пожалуйста подождите, идёт соединение с сервером.</p></div>
+        <div id="login" style="overflow: auto;float: left; width: 15%;"><b>Пользователи (<span>0</span>):</b></div>
     </div>
 </div>
     <div class="navbar-fixed-bottom">
