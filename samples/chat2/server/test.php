@@ -2,7 +2,7 @@
 <?php
 
 $config = array(
-    'websocket' => 'tcp://127.0.0.1:8000',
+    'websocket' => 'tcp://127.0.0.1:8001',
 );
 
 require_once('../../../WebsocketTest.php');
