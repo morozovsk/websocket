@@ -3,6 +3,8 @@
 //пример реализации чата
 class WebsocketWorkerHandler extends WebsocketWorker
 {
+    protected $ips;
+
     protected $logins = array();
 
     protected function onOpen($client) {//вызывается при соединении с новым клиентом
@@ -22,6 +24,16 @@ class WebsocketWorkerHandler extends WebsocketWorker
     protected function onMessage($client, $data) {//вызывается при получении сообщения от клиента
         if (!strlen($data['payload'])) {
             return;
+        }
+
+        //антифлуд:
+        $source = explode(':', stream_socket_get_name($client, true));
+        $ip = $source[0];
+        $time = time();
+        if (isset($this->ips[$ip]) && $this->ips[$ip] == $time) {
+            return;
+        } else {
+            $this->ips[$ip] = $time;
         }
 
         if ($login = array_search(intval($client), $this->logins)) {
