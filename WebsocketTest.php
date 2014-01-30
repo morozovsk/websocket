@@ -8,17 +8,19 @@ class WebsocketTest
     }
 
     public function start() {
-        for ($i=0; $i<=1000; $i++) {
-            $client = stream_socket_client ($this->config['websocket'], $errorNumber, $errorString, -1);
+        for ($i=0, $j=0; $i<=1500; $i++) {
+            $client = @stream_socket_client($this->config['websocket'], $errorNumber, $errorString, 1);
 
-            if (!$client) {
-                die("error: stream_socket_server: $errorString ($errorNumber)\r\n");
+            if ($client) {
+                fwrite($client, "GET / HTTP/1.1\r\nHost: localhost\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: tQXaRIOk4sOhgoq7SBs43g==\r\nSec-WebSocket-Version: 13\r\n\r\n");
+
+                $this->clients[$i] = $client;
+                if ($i && $i % 100 == 0) echo "success: $i, failure: $j\r\n";
+            } else {
+                $i--;
+                $j++;
+                if ($j && $j % 100 == 0) echo "success: $i, failure: $j\r\n";
             }
-
-            fwrite($client, "GET ws://yii.local:8000/ HTTP/1.1\r\nPragma: no-cache\r\nOrigin: http://yii.local\r\nHost: yii.local:8000\r\nSec-WebSocket-Key: tQXaRIOk4sOhgoq7SBs43g==\r\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/30.0.1599.114 Chrome/30.0.1599.114 Safari/537.36\r\nUpgrade: websocket\r\nSec-WebSocket-Extensions: x-webkit-deflate-frame\r\nCache-Control: no-cache\r\nConnection: Upgrade\r\nSec-WebSocket-Version: 13\r\n\r\n");
-
-            $this->clients[$i] = $client;
-            if ($i && $i % 100 == 0) echo "$i\r\n";
         }
 
         while (true) {
