@@ -70,7 +70,6 @@ abstract class WebsocketWorker extends WebsocketGeneric
 
                         if (!strlen($data) || !$this->addToRead($client, $data)) { //соединение было закрыто или превышен размер буфера
                             $this->close($client);
-                            $this->onClose($client);//вызываем пользовательский сценарий
                             continue;
                         }
 
@@ -83,7 +82,9 @@ abstract class WebsocketWorker extends WebsocketGeneric
 
             if ($write) {
                 foreach ($write as $client) {
-                    $this->sendBuffer($client);
+                    if (is_resource($client)) {//проверяем, что мы его ещё не закрыли во время чтения
+                        $this->sendBuffer($client);
+                    }
                 }
             }
         }
@@ -127,7 +128,10 @@ abstract class WebsocketWorker extends WebsocketGeneric
     protected function close($client) {
         unset($this->clients[intval($client)]);
         unset($this->handshakes[intval($client)]);
+        unset($this->write[intval($client)]);
+        unset($this->read[intval($client)]);
         @fclose($client);
+        $this->onClose($client);//вызываем пользовательский сценарий
     }
 
     protected function encode($payload, $type = 'text', $masked = false)

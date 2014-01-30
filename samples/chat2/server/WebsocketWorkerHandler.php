@@ -45,7 +45,7 @@ class WebsocketWorkerHandler extends WebsocketWorker
                 if (isset($this->logins[$match[0]])) {
                     $this->sendToClient($client, 'message', 'Система: выбранное вами имя занято, попробуйте другое.');
                 } else {
-                    $this->logins[$match[0]] = null;
+                    $this->logins[$match[0]] = -1;
                     $this->sendToMaster('login', array('login' => $match[0], 'clientId' => intval($client)));
                 }
             } else {
@@ -65,7 +65,7 @@ class WebsocketWorkerHandler extends WebsocketWorker
             if ($packet['data']['result']) {
                 $this->logins[ $packet['data']['login'] ] = $packet['data']['clientId'];
                 $this->sendToClients('login', $packet['data']['login']);
-                if ($packet['data']['clientId']) {
+                if (isset($this->clients[ $packet['data']['clientId'] ])) {
                     $this->sendToClient($this->clients[ $packet['data']['clientId'] ], 'message', 'Система: вы вошли в чат под именем ' . $packet['data']['login']);
                 }
             } else {

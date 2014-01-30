@@ -59,6 +59,8 @@ class WebsocketServer
         $pid = @file_get_contents($this->config['pid']);
         if ($pid) {
             posix_kill($pid, SIGTERM);
+            //sleep(5);
+            //posix_kill($pid, SIGKILL);
             unlink($this->config['pid']);
         } else {
             die("already stopped\r\n");

@@ -12,19 +12,19 @@ class WebsocketMasterHandler extends WebsocketMaster
             $this->sendToOtherWorkers($client, 'message', $packet['data']);
         } elseif ($packet['cmd'] == 'login') {
             $login = $packet['data']['login'];
-            if (isset($this->logins[$login])) {
+            if (in_array($login, $this->logins)) {
                 $packet['data']['result'] = false;
                 $this->sendToClient($client, 'login', $packet['data']);
             } else {
-                $this->logins[$login] = null;
+                $this->logins[] = $login;
                 $packet['data']['result'] = true;
                 $this->sendToClient($client, 'login', $packet['data']);
-                $packet['data']['clientId'] = null;
+                $packet['data']['clientId'] = -1;
                 $this->sendToOtherWorkers($client, 'login', $packet['data']);
             }
         } elseif ($packet['cmd'] == 'logout') {
             $login = $packet['data']['login'];
-            unset($this->logins[$login]);
+            unset($this->logins[array_search($login, $this->logins)]);
             $this->sendToOtherWorkers($client, 'logout', $packet['data']);
         }
     }
