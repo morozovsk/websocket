@@ -34,6 +34,7 @@
                         $('#login').scrollTop($('#login')[0].scrollHeight);
                     } else if (pack.cmd == 'logout') {
                         $("#l_" + pack.data).remove();
+                        $('#login span').text($('#login p').size());
                         $('#login').scrollTop($('#login')[0].scrollHeight);
                     } else if (pack.cmd == 'logins') {
                         pack.data.forEach(function(login) {
