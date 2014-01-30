@@ -35,6 +35,7 @@ abstract class WebsocketWorker extends WebsocketGeneric
             if (in_array($this->server, $read)) { //на серверный сокет пришёл запрос от нового клиента
                 //подключаемся к нему и делаем рукопожатие, согласно протоколу вебсокета
                 if ((count($this->clients) < self::MAX_SOCKETS) && ($client = @stream_socket_accept($this->server, 0))) {
+                    stream_set_blocking($client, 0);
                     $this->clients[intval($client)] = $client;
                     $this->handshakes[intval($client)] = '';//отмечаем, что нужно сделать рукопожатие
                 }

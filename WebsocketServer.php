@@ -13,6 +13,7 @@ class WebsocketServer
         }
         //открываем серверный сокет
         $server = stream_socket_server($this->config['websocket'], $errorNumber, $errorString);
+        stream_set_blocking($server, 0);
 
         if (!$server) {
             die("error: stream_socket_server: $errorString ($errorNumber)\r\n");
