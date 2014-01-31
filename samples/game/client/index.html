@@ -1,19 +1,28 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-    <title>FinanceTank</title>
-    <meta charset='utf-8'/>
-    <style type="text/css">
-        html, body {
-            overflow: hidden;
-            font-family: Helvetica;
-        }
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="language" content="en"/>
 
-    </style>
+    <link rel="stylesheet" type="text/css" href="css/main.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
     <script type="text/javascript" src="js/jquery.min.js"></script>
-    <script>
-        var ws;
+    <script type="text/javascript" src="js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="game.js"></script>
+    <title>FinanceTank</title>
+    <script type="text/javascript">
         $(function () {
+            canvas = document.getElementById("field");
+            ctx = canvas.getContext('2d');
+
+            canvas.width = w * cellsize;
+            canvas.height = h * cellsize;
+            ctx.font = "12px Arial";
+
+            window.addEventListener("keydown", keyDown, false);
+            window.addEventListener("keyup", keyUp, false);
+            canvas.focus();
+
             var chat = $("#chat");
             $('#chat').height($(window).height() - 80);
 
@@ -46,24 +55,27 @@
             }
 
             wsStart();
+
+            $('#chat').height($(window).height() - 80);
+            $('#login').height($(window).height() - 80);
         });
 
     </script>
 </head>
-<body>
-<div id="canvasdiv" style="float: left;width: 85%;">
+<body style="overflow: hidden;">
+<div id="canvasdiv" style="float: left;width: 1000px;">
     <canvas id='field' tabindex="1">Canvas here</canvas>
 </div>
-<div style="float: left;width: 15%;">
-    <p><b>W S A D</b> - move.</p>
-    <div id='chat' style="float: up; display:block; background-color: #eeeeee; height: 700px; width: 200px;overflow: auto;"></div>
-    <div style="float: up;">
+
+<div style="margin-left: 1000px; padding-left: 10px;">
+    <div id='chat' style="overflow: auto;margin-bottom: 150px;" class="well">
+
+    </div>
+    <div class="navbar-fixed-bottom" style="margin-left: 1010px; margin-bottom: -25px;margin-right: 15px;">
         <form onsubmit="ws.send($('input').val()); $('input').val(''); return false; ">
-            <input id="input" type="text" style="width: 180px;" class="form-control" placeholder="Text input" style="width: 100%;" maxlength="140" autocomplete="off">
+            <input id="input" type="text" class="form-control" placeholder="Text input" style="width: 100%;" maxlength="140" autocomplete="off">
         </form>
     </div>
 </div>
-
-<script src="game.js"></script>
 </body>
 </html>

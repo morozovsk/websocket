@@ -6,22 +6,16 @@
 var w = 100;
 var h = 60;
 var cellsize = 10;
-var canvas = document.getElementById("field");
-var ctx = canvas.getContext('2d');
 
-canvas.width = w * cellsize;
-canvas.height = h * cellsize;
-ctx.font = "12px Arial";
 
 // dir:   0 - up, 1 - down, 2 - left, 3 - right
 
 var paused = false;
 var keys = { up: false, down: false, left: false, right: false, shift: false, fire: false, superfire: false };
-var tanks = new Array(36);
-
 
 var tankmodelsize = 3;
 var tankmodel = new Array(4);
+
 tankmodel[0] = [
     0, 1, 0,
     1, 1, 1,
@@ -165,8 +159,3 @@ function keyUp(e) {
             break;
     }
 }
-
-paused = false;
-window.addEventListener("keydown", keyDown, false)
-window.addEventListener("keyup", keyUp, false)
-canvas.focus();
