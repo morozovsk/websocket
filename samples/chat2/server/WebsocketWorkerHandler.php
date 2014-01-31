@@ -22,7 +22,7 @@ class WebsocketWorkerHandler extends WebsocketWorker
     }
 
     protected function onMessage($client, $data) {//вызывается при получении сообщения от клиента
-        if (!strlen($data['payload'])) {
+        if (!strlen($data['payload']) || !mb_check_encoding($data['payload'], 'utf-8')) {
             return;
         }
 
