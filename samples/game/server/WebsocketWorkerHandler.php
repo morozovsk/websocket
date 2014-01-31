@@ -16,7 +16,7 @@ class WebsocketWorkerHandler extends WebsocketWorker
             'y' => rand(1, $this->h - 2),
             'dir' => 0,
             'name' => 'qwe',
-            'health' => rand(10, 100)
+            'health' => 0
         );
 
         $this->sendTanks();
@@ -38,37 +38,45 @@ class WebsocketWorkerHandler extends WebsocketWorker
         //var_dump($this->tanks[$clientId]);
         $this->tanks[$clientId]['dir'] = isset($tank['dir']) ? $tank['dir'] : $this->tanks[$clientId]['dir'];
 
-        if (true || $this->tanks[$clientId]['moving']) {
-            switch ($this->tanks[$clientId]['dir']) {
-                case 0:
-                    $this->tanks[$clientId]['y']--;
-                    break;
-                case 1:
-                    $this->tanks[$clientId]['y']++;
-                    break;
-                case 2:
-                    $this->tanks[$clientId]['x']--;
-                    break;
-                case 3:
-                    $this->tanks[$clientId]['x']++;
-                    break;
-            }
+        switch ($this->tanks[$clientId]['dir']) {
+            case 0:
+                $this->tanks[$clientId]['y']--;
+                break;
+            case 1:
+                $this->tanks[$clientId]['y']++;
+                break;
+            case 2:
+                $this->tanks[$clientId]['x']--;
+                break;
+            case 3:
+                $this->tanks[$clientId]['x']++;
+                break;
+        }
 
-            if ($this->tanks[$clientId]['x'] < 0) {
-                $this->tanks[$clientId]['x'] = 0;
-                //$this->tanks[$clientId]['moving'] = false;
-            }
-            if ($this->tanks[$clientId]['y'] < 0) {
-                $this->tanks[$clientId]['y'] = 0;
-                //$this->tanks[$clientId]['moving'] = false;
-            }
-            if ($this->tanks[$clientId]['x'] > $this->w - $this->tankmodelsize) {
-                $this->tanks[$clientId]['x'] = $this->w - $this->tankmodelsize;
-                //$this->tanks[$clientId]['moving'] = false;
-            }
-            if ($this->tanks[$clientId]['y'] > $this->h - $this->tankmodelsize) {
-                $this->tanks[$clientId]['y'] = $this->h - $this->tankmodelsize;
-                //$this->tanks[$clientId]['moving'] = false;
+        if ($this->tanks[$clientId]['x'] < 0) {
+            $this->tanks[$clientId]['x'] = 0;
+        }
+        if ($this->tanks[$clientId]['y'] < 0) {
+            $this->tanks[$clientId]['y'] = 0;
+        }
+        if ($this->tanks[$clientId]['x'] > $this->w - $this->tankmodelsize) {
+            $this->tanks[$clientId]['x'] = $this->w - $this->tankmodelsize;
+        }
+        if ($this->tanks[$clientId]['y'] > $this->h - $this->tankmodelsize) {
+            $this->tanks[$clientId]['y'] = $this->h - $this->tankmodelsize;
+        }
+
+        foreach ($this->tanks as $tankId => $tank) {
+            if ($tankId != $clientId && $this->tanks[$clientId]['dir'] == $tank['dir'] &&
+                ($this->tanks[$clientId]['x'] == $tank['x']
+                    && ($this->tanks[$clientId]['y'] - 2 == $tank['y'] && $tank['dir'] == 0
+                        || $this->tanks[$clientId]['y'] + 2 == $tank['y'] && $tank['dir'] == 1)
+                    || $this->tanks[$clientId]['y'] == $tank['y']
+                    && ($this->tanks[$clientId]['x'] - 2 == $tank['x'] && $tank['dir'] == 2
+                        || $this->tanks[$clientId]['x'] + 2 == $tank['x'] && $tank['dir'] == 3)
+                )) {
+                $this->tanks[$clientId]['health']++;
+                break;
             }
         }
 

@@ -51,12 +51,11 @@
     </script>
 </head>
 <body>
-<div id="canvasdiv" style="float: left;">
+<div id="canvasdiv" style="float: left;width: 85%;">
     <canvas id='field' tabindex="1">Canvas here</canvas>
-    <p><b>W S A D</b> - move. <b>Ctrl/Space</b> - <font color="red">fire</font>, <b>Shift</b> - <font color="red">SUPERfire</font>, <b>L</b> - hold
-        gun angle.</p>
 </div>
-<div style="float: left;">
+<div style="float: left;width: 15%;">
+    <p><b>W S A D</b> - move.</p>
     <div id='chat' style="float: up; display:block; background-color: #eeeeee; height: 700px; width: 200px;overflow: auto;"></div>
     <div style="float: up;">
         <form onsubmit="ws.send($('input').val()); $('input').val(''); return false; ">
