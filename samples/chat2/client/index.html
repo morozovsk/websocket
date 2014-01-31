@@ -58,11 +58,15 @@
 <body>
 <div class="container-fluid">
     <div class="row">
-        <div id="chat" style="overflow: auto;float: left;width: 85%;"><p>Система: пожалуйста подождите, идёт соединение с сервером.</p></div>
-        <div id="login" style="overflow: auto;float: left; width: 15%;"><b>Пользователи (<span>0</span>):</b></div>
+        <div style="float: left;width: 85%;padding: 10px;">
+            <div id="chat" style="overflow: auto;" class="well"><p>Система: пожалуйста подождите, идёт соединение с сервером.</p></div>
+        </div>
+        <div style="width: 15%;margin-left: 85%; padding: 10px;">
+            <div id="login" style="overflow: auto;" class="well"><b>Пользователи (<span>0</span>):</b></div>
+        </div>
     </div>
 </div>
-    <div class="navbar-fixed-bottom">
+    <div class="navbar-fixed-bottom" style="margin-bottom: -30px;margin-top: 0px;margin-left: 10px;margin-right: 20px;">
         <form onsubmit="ws.send($('input').val()); $('input').val(''); return false; ">
             <input id="input" type="text" class="form-control" placeholder="Text input" style="width: 100%;" maxlength="140" autocomplete="off">
         </form>
