@@ -12,29 +12,36 @@
     </style>
     <script type="text/javascript" src="js/jquery.min.js"></script>
     <script>
+        var ws;
         $(function () {
+            var chat = $("#chat");
             $('#chat').height($(window).height() - 80);
 
             function wsStart() {
-                window.ws = new WebSocket("ws://127.0.0.1:8002/");
-                window.ws.onopen = function () {
-                    $("#chat").append("<p>система: соединение открыто</p>");
-                    $('#chat').scrollTop($('#chat')[0].scrollHeight);
+                ws = new WebSocket("ws://127.0.0.1:8002/");
+                ws.onopen = function () {
+                    chat.append("<p>система: соединение открыто</p>");
+                    chat.scrollTop($('#chat')[0].scrollHeight);
                     if (paused) {
-                        paused = true;
+                        paused = false;
                     } else {
                         mainLoop();
                     }
                 };
-                window.ws.onclose = function () {
-                    $("#chat").append("<p>система: соединение закрыто, пытаюсь переподключиться</p>");
-                    $('#chat').scrollTop($('#chat')[0].scrollHeight);
+                ws.onclose = function () {
+                    chat.append("<p>система: соединение закрыто, пытаюсь переподключиться</p>");
+                    chat.scrollTop($('#chat')[0].scrollHeight);
                     paused = false;
                     setTimeout(wsStart, 1000);
                 };
-                window.ws.onmessage = function (evt) {
-                    $("#chat").append("<p>" + evt.data + "</p>");
-                    $('#chat').scrollTop($('#chat')[0].scrollHeight);
+                ws.onmessage = function (evt) {
+                    tanks = JSON.parse(evt.data);
+                    //chat.append("<p>" + evt.data + "</p>");
+
+                    //moveTank(tanks[0]);
+                    draw();
+
+                    chat.scrollTop($('#chat')[0].scrollHeight);
                 };
             }
 
