@@ -19,7 +19,7 @@ class WebsocketWorkerHandler extends WebsocketWorker
         //var_export($data);
         //шлем всем сообщение, о том, что пишет один из клиентов
         //echo $data['payload'] . "\n";
-        $message = 'пользователь #' . intval($client) . ' (' . $this->pid . '): ' . str_replace(self::SOCKET_MESSAGE_DELIMITER, '', strip_tags($data['payload']));
+        $message = 'пользователь #' . $client . ' (' . $this->pid . '): ' . str_replace(self::SOCKET_MESSAGE_DELIMITER, '', strip_tags($data['payload']));
         $this->send($message);
 
         $this->sendHelper($message);

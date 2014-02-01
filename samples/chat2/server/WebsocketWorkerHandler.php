@@ -14,9 +14,9 @@ class WebsocketWorkerHandler extends WebsocketWorker
     }
 
     protected function onClose($client) {//вызывается при закрытии соединения клиентом
-        if ($login = array_search(intval($client), $this->logins)) {
+        if ($login = array_search($client, $this->logins)) {
             unset($this->logins[$login]);
-            $this->sendToMaster('logout', array('login' => $login, 'clientId' => intval($client)));
+            $this->sendToMaster('logout', array('login' => $login, 'clientId' => $client));
             $this->sendToClients('logout', $login);
         }
     }
@@ -27,7 +27,7 @@ class WebsocketWorkerHandler extends WebsocketWorker
         }
 
         //антифлуд:
-        $source = explode(':', stream_socket_get_name($client, true));
+        $source = explode(':', stream_socket_get_name($this->clients[$client], true));
         $ip = $source[0];
         $time = time();
         if (isset($this->ips[$ip]) && $this->ips[$ip] == $time) {
@@ -36,7 +36,7 @@ class WebsocketWorkerHandler extends WebsocketWorker
             $this->ips[$ip] = $time;
         }
 
-        if ($login = array_search(intval($client), $this->logins)) {
+        if ($login = array_search($client, $this->logins)) {
             $message = $login . ': ' . strip_tags($data['payload']);
             $this->sendToMaster('message', $message);
             $this->sendToClients('message', $message);
@@ -46,7 +46,7 @@ class WebsocketWorkerHandler extends WebsocketWorker
                     $this->sendToClient($client, 'message', 'Система: выбранное вами имя занято, попробуйте другое.');
                 } else {
                     $this->logins[$match[0]] = -1;
-                    $this->sendToMaster('login', array('login' => $match[0], 'clientId' => intval($client)));
+                    $this->sendToMaster('login', array('login' => $match[0], 'clientId' => $client));
                 }
             } else {
                 $this->sendToClient($client, 'message', 'Система: ошибка при выборе имени. В имени можно использовать английские буквы и цифры. Имя не должно превышать 10 символов.');
