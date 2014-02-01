@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="language" content="en"/>
+
+    <link rel="stylesheet" type="text/css" href="css/main.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="game.js"></script>
+    <title>FinanceTank</title>
+    <script type="text/javascript">
+        $(function () {
+            canvas = document.getElementById("field");
+            ctx = canvas.getContext('2d');
+
+            canvas.width = w * cellsize;
+            canvas.height = h * cellsize;
+            ctx.font = "12px Arial";
+
+            window.addEventListener("keydown", keyDown, false);
+            window.addEventListener("keyup", keyUp, false);
+            canvas.focus();
+
+            var chat = $("#chat");
+            chat.height($(window).height() - 80);
+
+            function mainLoop() {
+                if (paused) {
+                    return;
+                }
+
+                applyKeys();
+                setTimeout(mainLoop, 1000 / 10);
+            }
+
+
+            function wsStart() {
+                ws = new WebSocket("ws://127.0.0.1:8002/");
+                ws.onopen = function () {
+                    chat.append("<p>Система: соединение открыто. Чтобы начать играть введите имя, под которым вы будете отображаться. В имени можно использовать английские буквы и цифры. Имя не должно превышать 4 символов.</p>");
+                    chat.scrollTop($('#chat')[0].scrollHeight);
+                };
+                ws.onclose = function () {
+                    chat.append("<p>система: соединение закрыто, пытаюсь переподключиться</p>");
+                    chat.scrollTop($('#chat')[0].scrollHeight);
+                    paused = true;
+                    setTimeout(wsStart, 1000);
+                };
+                ws.onmessage = function (evt) {
+                    var pack = JSON.parse(evt.data);
+                    if (pack.cmd == 'message') {
+                        chat.append("<p>"+pack.data+"</p>");
+                        chat.scrollTop($('#chat')[0].scrollHeight);
+                    } else if (pack.cmd == 'tanks') {
+                        tanks = pack.data;
+
+                        draw();
+
+                        if (paused) {
+                            paused = false;
+                            mainLoop();
+                        }
+                    }
+                };
+            }
+
+            wsStart();
+
+            $('#chat').height($(window).height() - 80);
+
+            $('#input').focus();
+        });
+
+    </script>
+</head>
+<body style="overflow: hidden;">
+<div id="canvasdiv" style="float: left;width: 1000px;margin:10px;margin-top: 0px;padding: 0px;" class="well">
+    <canvas id='field' tabindex="1">Canvas here</canvas>
+</div>
+
+<div style="margin-left: 1000px; padding-left: 10px;">
+    <div id='chat' style="overflow: auto;margin: 10px; margin-bottom: 150px;" class="well">
+        <p>Система: пожалуйста подождите, идёт соединение с сервером.</p>
+    </div>
+    <div class="navbar-fixed-bottom" style="margin-left: 1020px; margin-bottom: -15px;margin-right: 20px;">
+        <form onsubmit="ws.send($('input').val()); $('input').val(''); return false; ">
+            <input id="input" type="text" class="form-control" placeholder="Text input" style="width: 100%;" maxlength="140" autocomplete="off">
+        </form>
+    </div>
+</div>
+</body>
+</html>
