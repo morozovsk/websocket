@@ -74,6 +74,7 @@ abstract class WebsocketWorker extends WebsocketGeneric
                             continue;
                         }
 
+                        $client = intval($client);
                         while (($data = $this->decode($client)) && mb_check_encoding($data['payload'], 'utf-8')) {//декодируем буфер (в нём может быть несколько сообщений)
                             $this->onMessage($client, $data);//вызываем пользовательский сценарий
                         }
@@ -95,21 +96,23 @@ abstract class WebsocketWorker extends WebsocketGeneric
         //считываем загаловки из соединения
         $data = fread($client, self::SOCKET_BUFFER_SIZE);
 
+        $client = intval($client);
+
         if (!$this->addToRead($client, $data)) {
             return false;
         }
 
-        if (!strpos($this->read[intval($client)], "\r\n\r\n")) {
+        if (!strpos($this->read[$client], "\r\n\r\n")) {
             return true;
         }
 
-        preg_match("/Sec-WebSocket-Key: (.*)\r\n/", $this->read[intval($client)], $match);
+        preg_match("/Sec-WebSocket-Key: (.*)\r\n/", $this->read[$client], $match);
 
         if (empty($match[1])) {
             return false;
         }
 
-        $this->read[intval($client)] = '';
+        $this->read[$client] = '';
 
         //отправляем заголовок согласно протоколу вебсокета
         $SecWebSocketAccept = base64_encode(pack('H*', sha1($match[1] . '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')));
@@ -119,7 +122,7 @@ abstract class WebsocketWorker extends WebsocketGeneric
             "Sec-WebSocket-Accept:$SecWebSocketAccept\r\n\r\n";
 
         $this->write($client, $upgrade);
-        unset($this->handshakes[intval($client)]);
+        unset($this->handshakes[$client]);
 
         $this->onOpen($client);
 
@@ -127,11 +130,13 @@ abstract class WebsocketWorker extends WebsocketGeneric
     }
 
     protected function close($client) {
-        unset($this->clients[intval($client)]);
-        unset($this->handshakes[intval($client)]);
-        unset($this->write[intval($client)]);
-        unset($this->read[intval($client)]);
         @fclose($client);
+        $client = intval($client);
+        unset($this->clients[$client]);
+        unset($this->handshakes[$client]);
+        unset($this->write[$client]);
+        unset($this->read[$client]);
+
         $this->onClose($client);//вызываем пользовательский сценарий
     }
 
@@ -203,7 +208,7 @@ abstract class WebsocketWorker extends WebsocketGeneric
 
     protected function decode($connect)
     {
-        $data = $this->read[intval($connect)];
+        $data = $this->read[$connect];
 
         $unmaskedPayload = '';
         $decodedData = array();
@@ -264,7 +269,7 @@ abstract class WebsocketWorker extends WebsocketGeneric
         if (strlen($data) < $dataLength) {
             return false;
         } else {
-            $this->read[intval($connect)] = substr($data, $dataLength);
+            $this->read[$connect] = substr($data, $dataLength);
         }
 
         if ($isMasked) {
