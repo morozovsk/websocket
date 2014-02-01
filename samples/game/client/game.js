@@ -10,7 +10,7 @@ var cellsize = 10;
 
 // dir:   0 - up, 1 - down, 2 - left, 3 - right
 
-var paused = false;
+var paused = true;
 var keys = { up: false, down: false, left: false, right: false, shift: false, fire: false, superfire: false };
 
 var tankmodelsize = 3;
@@ -85,16 +85,6 @@ function draw() {
 
     for (i = 0; i < tanks.length; ++i)
         drawTank(tanks[i], i);
-}
-
-function mainLoop() {
-    if (paused) {
-        setTimeout(mainLoop, 1000 / 10);
-        return;
-    }
-
-    applyKeys();
-    setTimeout(mainLoop, 1000 / 10);
 }
 
 function keyDown(e) {

@@ -24,40 +24,53 @@
             canvas.focus();
 
             var chat = $("#chat");
-            $('#chat').height($(window).height() - 80);
+            chat.height($(window).height() - 80);
+
+            function mainLoop() {
+                if (paused) {
+                    return;
+                }
+
+                applyKeys();
+                setTimeout(mainLoop, 1000 / 10);
+            }
+
 
             function wsStart() {
                 ws = new WebSocket("ws://127.0.0.1:8002/");
                 ws.onopen = function () {
-                    chat.append("<p>система: соединение открыто</p>");
+                    chat.append("<p>Система: соединение открыто. Чтобы начать играть введите имя, под которым вы будете отображаться. В имени можно использовать английские буквы и цифры. Имя не должно превышать 4 символов.</p>");
                     chat.scrollTop($('#chat')[0].scrollHeight);
-                    if (paused) {
-                        paused = false;
-                    } else {
-                        mainLoop();
-                    }
                 };
                 ws.onclose = function () {
                     chat.append("<p>система: соединение закрыто, пытаюсь переподключиться</p>");
                     chat.scrollTop($('#chat')[0].scrollHeight);
-                    paused = false;
+                    paused = true;
                     setTimeout(wsStart, 1000);
                 };
                 ws.onmessage = function (evt) {
-                    tanks = JSON.parse(evt.data);
-                    //chat.append("<p>" + evt.data + "</p>");
+                    var pack = JSON.parse(evt.data);
+                    if (pack.cmd == 'message') {
+                        chat.append("<p>"+pack.data+"</p>");
+                        chat.scrollTop($('#chat')[0].scrollHeight);
+                    } else if (pack.cmd == 'tanks') {
+                        tanks = pack.data;
 
-                    //moveTank(tanks[0]);
-                    draw();
+                        draw();
 
-                    chat.scrollTop($('#chat')[0].scrollHeight);
+                        if (paused) {
+                            paused = false;
+                            mainLoop();
+                        }
+                    }
                 };
             }
 
             wsStart();
 
             $('#chat').height($(window).height() - 80);
-            $('#login').height($(window).height() - 80);
+
+            $('#input').focus();
         });
 
     </script>
@@ -69,7 +82,7 @@
 
 <div style="margin-left: 1000px; padding-left: 10px;">
     <div id='chat' style="overflow: auto;margin: 10px; margin-bottom: 150px;" class="well">
-
+        <p>Система: пожалуйста подождите, идёт соединение с сервером.</p>
     </div>
     <div class="navbar-fixed-bottom" style="margin-left: 1020px; margin-bottom: -15px;margin-right: 20px;">
         <form onsubmit="ws.send($('input').val()); $('input').val(''); return false; ">
