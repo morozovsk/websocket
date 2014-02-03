@@ -73,7 +73,7 @@ class WebsocketWorkerHandler extends WebsocketWorker
                                 || $this->tanks[$client]['x'] + 2 == $tank['x'] && $tank['dir'] == 3)
                         )) {
                         $this->tanks[$client]['health']++;
-                        $this->tanks[$tankId]['health']--;
+                        //$this->tanks[$tankId]['health']--;
                         break;
                     }
                 }

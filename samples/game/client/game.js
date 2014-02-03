@@ -33,20 +33,18 @@ tankmodel[3] = [
     0, 1, 1,
     1, 1, 0 ];
 
-function applyKeys() {
-    tankObj = {}
-
-    if (keys.up)
-        tankObj.dir = 0;
-    else if (keys.down)
-        tankObj.dir = 1;
-    else if (keys.left)
-        tankObj.dir = 2;
-    else if (keys.right)
-        tankObj.dir = 3;
+function applyKeys(tank) {
+    if ((keys.up && !keys.left && !keys.right) || (keys.up && (keys.left || keys.right) && tank.dir != 0))
+        tank.dir = 0;
+    else if (keys.down && !keys.left && !keys.right  || keys.down && (keys.left || keys.right) && tank.dir != 1)
+        tank.dir = 1;
+    else if ((keys.left && !keys.up && !keys.down) || (keys.left && (keys.up || keys.down) && tank.dir != 2))
+        tank.dir = 2;
+    else if ((keys.right && !keys.up && !keys.down) || (keys.right && (keys.up || keys.down) && tank.dir != 3))
+        tank.dir = 3;
 
     if (keys.up || keys.down || keys.left || keys.right) {
-        ws.send(JSON.stringify(tankObj));
+        ws.send(JSON.stringify(tank));
     }
 }
 
@@ -54,32 +52,32 @@ function applyKeys() {
 // Drawing
 //
 
-function drawTank(tankObj, i) {
+function drawTank(tank, i) {
     if (!i) {
         ctx.fillStyle = "#3b5998";
-    } else /*if (!tankObj.health) {
+    } else /*if (!tank.health) {
         ctx.fillStyle = "#008000";
-    } else if (tankObj.health > 0) {
+    } else if (tank.health > 0) {
         ctx.fillStyle = "#000000";
-    } else if (tankObj.health < 0)*/ {
+    } else if (tank.health < 0)*/ {
         ctx.fillStyle = "#00bbbb";
     }
 
     for (iy = 0; iy < tankmodelsize; iy++) {
         for (ix = 0; ix < tankmodelsize; ix++) {
-            if (1 == tankmodel[ tankObj.dir ][iy * tankmodelsize + ix]) {
-                ctx.fillRect(cellsize * (tankObj.x + ix), cellsize * (tankObj.y + iy), cellsize - 1, cellsize - 1);
+            if (1 == tankmodel[ tank.dir ][iy * tankmodelsize + ix]) {
+                ctx.fillRect(cellsize * (tank.x + ix), cellsize * (tank.y + iy), cellsize - 1, cellsize - 1);
             }
         }
     }
 
-    ctx.fillText(tankObj.name, cellsize * tankObj.x, cellsize * (tankObj.y + 4));
+    ctx.fillText(tank.name, cellsize * tank.x, cellsize * (tank.y + 4));
 
-    if (tankObj.health) {
+    if (tank.health) {
         ctx.fillStyle = "#000";
         ctx.font = "10px sans-serif";
         ctx.textBaseline = "bottom";
-        ctx.fillText(tankObj.health, cellsize * tankObj.x, cellsize * tankObj.y - 15);
+        ctx.fillText(tank.health, cellsize * tank.x, cellsize * tank.y - 15);
     }
 
     /*ctx.fillStyle = "#a5f5a5";

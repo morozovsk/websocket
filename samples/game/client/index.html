@@ -25,13 +25,13 @@
             var chat = $("#chat");
             chat.height($(window).height() - 80);
 
-            function mainLoop() {
+            function mainLoop(tank) {
                 if (paused) {
                     return;
                 }
 
-                applyKeys();
-                setTimeout(mainLoop, 1000 / 10);
+                applyKeys(tank);
+                setTimeout(function() {mainLoop(tank)}, 1000 / 10);
             }
 
 
@@ -59,7 +59,7 @@
 
                         if (paused) {
                             paused = false;
-                            mainLoop();
+                            mainLoop(tanks[0]);
                         }
                     }
                 };
