@@ -11,7 +11,7 @@ var cellsize = 10;
 // dir:   0 - up, 1 - down, 2 - left, 3 - right
 
 var paused = true;
-var keys = { up: false, down: false, left: false, right: false, shift: false, fire: false, superfire: false };
+var keys = { up: false, down: false, left: false, right: false};
 
 var tankmodelsize = 3;
 var tankmodel = new Array(4);
@@ -57,11 +57,11 @@ function applyKeys() {
 function drawTank(tankObj, i) {
     if (!i) {
         ctx.fillStyle = "#3b5998";
-    } else if (!tankObj.health) {
+    } else /*if (!tankObj.health) {
         ctx.fillStyle = "#008000";
     } else if (tankObj.health > 0) {
         ctx.fillStyle = "#000000";
-    } else if (tankObj.health < 0) {
+    } else if (tankObj.health < 0)*/ {
         ctx.fillStyle = "#00bbbb";
     }
 
@@ -81,11 +81,9 @@ function drawTank(tankObj, i) {
         ctx.textBaseline = "bottom";
         ctx.fillText(tankObj.health, cellsize * tankObj.x, cellsize * tankObj.y - 15);
     }
-}
 
-function drawHealth(x, y, health) {
-    ctx.fillStyle = "#a5f5a5";
-    ctx.fillRect(x, y, health / 3, 5);
+    /*ctx.fillStyle = "#a5f5a5";
+    ctx.fillRect(x, y, health / 3, 5);*/
 }
 
 function draw() {
