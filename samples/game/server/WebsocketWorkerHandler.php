@@ -73,6 +73,7 @@ class WebsocketWorkerHandler extends WebsocketWorker
                                 || $this->tanks[$client]['x'] + 2 == $tank['x'] && $tank['dir'] == 3)
                         )) {
                         $this->tanks[$client]['health']++;
+                        $this->tanks[$tankId]['health']--;
                         break;
                     }
                 }
@@ -94,7 +95,7 @@ class WebsocketWorkerHandler extends WebsocketWorker
             }
 
         } else {
-            if (preg_match('/^[a-zA-Z0-9]{1,3}$/', $data['payload'], $match)) {
+            if (preg_match('/^[a-zA-Z0-9]{1,10}$/', $data['payload'], $match)) {
                 if (isset($this->logins[$match[0]])) {
                     $this->sendToClient($client, 'message', 'Система: выбранное вами имя занято, попробуйте другое.');
                 } else {
@@ -104,7 +105,7 @@ class WebsocketWorkerHandler extends WebsocketWorker
                     $this->sendTanks();
                 }
             } else {
-                $this->sendToClient($client, 'message', 'Система: ошибка при выборе имени. В имени можно использовать английские буквы и цифры. Имя не должно превышать 3 символов.');
+                $this->sendToClient($client, 'message', 'Система: ошибка при выборе имени. В имени можно использовать английские буквы и цифры. Имя не должно превышать 10 символов.');
             }
         }
     }
