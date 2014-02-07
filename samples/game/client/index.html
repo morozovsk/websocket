@@ -26,20 +26,19 @@
             chat.height($(window).height() - 80);
 
             function mainLoop(tank) {
-                if (paused) {
-                    return;
+                if (!paused) {
+                    applyKeys(tank);
                 }
-
-                applyKeys(tank);
                 setTimeout(function() {mainLoop(tank)}, 1000 / 10);
             }
-
 
             function wsStart() {
                 ws = new WebSocket("ws://127.0.0.1:8002/");
                 ws.onopen = function () {
                     chat.append("<p>Система: соединение открыто. Чтобы начать играть введите имя, под которым вы будете отображаться. В имени можно использовать английские буквы и цифры. Имя не должно превышать 10 символов.</p>");
                     chat.scrollTop($('#chat')[0].scrollHeight);
+                    paused = true;
+                    mainLoop({});
                 };
                 ws.onclose = function () {
                     chat.append("<p>система: соединение закрыто, пытаюсь переподключиться</p>");
@@ -59,7 +58,6 @@
 
                         if (paused) {
                             paused = false;
-                            mainLoop(tanks[0]);
                         }
                     }
                 };

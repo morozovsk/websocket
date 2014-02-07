@@ -20,6 +20,7 @@ class WebsocketWorkerHandler extends WebsocketWorker
         unset($this->tanks[$client]);
         if ($login = array_search($client, $this->logins)) {
             unset($this->logins[$login]);
+            $this->sendTanks();
         }
     }
 
@@ -29,7 +30,7 @@ class WebsocketWorkerHandler extends WebsocketWorker
         }
 
         if ($login = array_search($client, $this->logins)) {
-            if ($tank = @json_decode($data['payload'], true)) {
+            if (substr($data['payload'], 0, 1) == '{' && $tank = @json_decode($data['payload'], true)) {
                 //echo $data['payload'] . "\n";
                 //$this->tanks[$client] = $tank;
                 //var_dump($this->tanks[$client]);

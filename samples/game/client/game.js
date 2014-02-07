@@ -45,6 +45,7 @@ function applyKeys(tank) {
 
     if (keys.up || keys.down || keys.left || keys.right) {
         ws.send(JSON.stringify(tank));
+        paused = true;
     }
 }
 
