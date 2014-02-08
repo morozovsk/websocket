@@ -14,7 +14,9 @@ return array(
             'class' => 'Websocket',
             //'websocket' => 'tcp://127.0.0.1:8000',
             //'localsocket' => 'tcp://127.0.0.1:8001',// unix:///tmp/mysock
-            //'workers' => 1
+            //'workers' => 1,
+            //'master' => 'WebsocketMasterHandler',
+            //'worker' => 'WebsocketWorkerHandler'
         ),
     ),
 );

@@ -4,29 +4,20 @@ abstract class WebsocketMaster extends WebsocketGeneric
 {
     protected $workers = array();
 
-    public function __construct($workers, $localsocket) {
+    public function __construct($service, $workers) {
         $this->clients = $this->workers = $workers;
-        $this->localsocket = $localsocket;
+        $this->service = $service;
     }
 
     public function start() {
         /*pcntl_signal(SIGTERM, array($this, 'stop'));
         pcntl_signal_dispatch();*/
 
-        //создаём сокет для обработки сообщений от скриптов
-        if ($this->localsocket) {
-            $service = stream_socket_server($this->localsocket, $errorNumber, $errorString);
-
-            if (!$service) {
-                die("error: stream_socket_server: $errorString ($errorNumber)\r\n");
-            }
-        }
-
         while (true) {
             //подготавливаем массив всех сокетов, которые нужно обработать
             $read = $this->clients;
-            if ($this->localsocket) {
-                $read[] = $service;
+            if ($this->service) {
+                $read[] = $this->service;
             }
 
             $write = array();
@@ -41,13 +32,13 @@ abstract class WebsocketMaster extends WebsocketGeneric
 
             stream_select($read, $write, $except = null, null);//обновляем массив сокетов, которые можно обработать
 
-            if ($this->localsocket && in_array($service, $read)) { //на мастер пришёл запрос от нового клиента
-                if ($client = stream_socket_accept($service, -1)) { //подключаемся к нему
+            if ($this->service && in_array($this->service, $read)) { //на мастер пришёл запрос от нового клиента
+                if ($client = stream_socket_accept($this->service, -1)) { //подключаемся к нему
                     $this->clients[intval($client)] = $client;
                 }
 
                 //удаляем мастера из массива, чтобы не обработать его в этом цикле ещё раз
-                unset($read[array_search($service, $read)]);
+                unset($read[array_search($this->service, $read)]);
             }
 
             if ($read) {//пришли данные от подключенных клиентов

@@ -19,16 +19,27 @@ class WebsocketServer
             die("error: stream_socket_server: $errorString ($errorNumber)\r\n");
         }
 
+        $service = null;
+        if (!empty($this->config['localsocket'])) {
+            //создаём сокет для обработки сообщений от скриптов
+            $service = stream_socket_server($this->localsocket, $errorNumber, $errorString);
+            stream_set_blocking($service, 0);
+
+            if (!$service) {
+                die("error: stream_socket_server: $errorString ($errorNumber)\r\n");
+            }
+        }
+
         list($pid, $master, $workers) = $this->spawnWorkers();//создаём дочерние процессы
 
         if ($pid) {//мастер
             file_put_contents($this->config['pid'], $pid);
             fclose($server);//мастер не будет обрабатывать входящие соединения на основном сокете
-            $WebsocketMaster = new WebsocketMasterHandler($workers, @$this->config['localsocket']);//мастер будет обрабатывать сообщения от скриптов и пересылать их в воркеры
-            $WebsocketMaster->start();
+            $master = new $this->config['master'] ($service, $workers);//мастер будет обрабатывать сообщения от скриптов и пересылать их в воркеры
+            $master->start();
         } else {//воркер
-            $WebsocketHandler = new WebsocketWorkerHandler($server, $master);
-            $WebsocketHandler->start();
+            $worker = new $this->config['worker'] ($server, array($master));
+            $worker->start();
         }
     }
 
@@ -60,11 +71,30 @@ class WebsocketServer
         $pid = @file_get_contents($this->config['pid']);
         if ($pid) {
             posix_kill($pid, SIGTERM);
-            //sleep(5);
-            //posix_kill($pid, SIGKILL);
+            sleep(1);
+            posix_kill($pid, SIGKILL);
             unlink($this->config['pid']);
+            sleep(1);
+            if ($websocket = @stream_socket_client ($this->config['websocket'], $errno, $errstr)) {
+                stream_socket_shutdown($websocket, STREAM_SHUT_RDWR);
+            }
+
+            if (!empty($this->config['localsocket'])) {
+                if ($localsocket = stream_socket_client ($this->config['localsocket'], $errno, $errstr)) {
+                    stream_socket_shutdown($localsocket, STREAM_SHUT_RDWR);
+                }
+            }
         } else {
             die("already stopped\r\n");
         }
+    }
+
+    public function restart() {
+        $pid = @file_get_contents($this->config['pid']);
+        if ($pid) {
+            $this->stop();
+        }
+
+        $this->start();
     }
 }

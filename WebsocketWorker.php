@@ -9,7 +9,7 @@ abstract class WebsocketWorker extends WebsocketGeneric
 
     public function __construct($server, $master) {
         $this->server = $server;
-        $this->master = $master;
+        $this->master = array_shift($master);
         $this->pid = posix_getpid();
     }
 

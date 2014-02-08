@@ -6,6 +6,8 @@ class Websocket extends CApplicationComponent
     public $localsocket = 'tcp://127.0.0.1:8001'; // unix:///tmp/websocket.sock
     public $workers = 1;
     public $pid = '/tmp/websocket.pid';
+    public $master = 'WebsocketMasterHandler';
+    public $worker = 'WebsocketWorkerHandler';
 
     protected $instance = null;
 
