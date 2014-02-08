@@ -4,7 +4,12 @@ class WebsocketMasterHandler extends WebsocketMaster
 {
     protected $logins = array();
 
-    protected function onMessage($client, $packet) //вызывается при получении сообщения от воркера или скриптов
+    protected function onMessage($client, $packet) //вызывается при получении сообщения от скриптов
+    {
+
+    }
+
+    protected function onWorkerMessage($client, $packet) //вызывается при получении сообщения от воркера
     {
         $packet = $this->unpack($packet);
 

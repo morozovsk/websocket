@@ -57,7 +57,7 @@ class WebsocketWorkerHandler extends WebsocketWorker
         //echo $data['payload'] . "\n";
     }
 
-    protected function onSend($packet) {//вызывается при получении сообщения от мастера
+    protected function onMasterMessage($packet) {//вызывается при получении сообщения от мастера
         $packet = $this->unpack($packet);
         if ($packet['cmd'] == 'message') {
             $this->sendToClients('message', $packet['data']);
@@ -88,7 +88,7 @@ class WebsocketWorkerHandler extends WebsocketWorker
         }
     }
 
-    private function sendToClient($client, $cmd, $data) {
+    protected function sendToClient($client, $cmd, $data) {
         $this->write($client, $this->encode($this->pack($cmd, $data)));
     }
 

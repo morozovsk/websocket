@@ -25,7 +25,7 @@ class WebsocketWorkerHandler extends WebsocketWorker
         $this->sendHelper($message);
     }
 
-    protected function onSend($data) {//вызывается при получении сообщения от мастера
+    protected function onMasterMessage($data) {//вызывается при получении сообщения от мастера
         $this->sendHelper($data);
     }
 

@@ -2,94 +2,58 @@
 
 abstract class WebsocketWorker extends WebsocketGeneric
 {
-    protected $server;
-    protected $master;
     protected $pid;
-    protected $handshakes = array();
+    private $handshakes = array();
 
     public function __construct($server, $master) {
         $this->server = $server;
-        $this->master = array_shift($master);
+        $this->services = array($master);
+
+        $this->master = $master;
         $this->pid = posix_getpid();
     }
 
-    public function start() {
-        while (true) {
-            //подготавливаем массив всех сокетов, которые нужно обработать
-            $read = $this->clients;
-            $read[] = $this->server;
-            $read[] = $this->master;
+    protected function _onOpen($client) {
+        $this->handshakes[intval($client)] = '';//отмечаем, что нужно сделать рукопожатие
+    }
 
-            $write = array();
-
-            if ($this->write) {
-                foreach ($this->write as $clientId => $buffer) {
-                    if ($buffer) {
-                        $write[] = $clientId == intval($this->master) ? $this->master : $this->clients[$clientId];
-                    }
-                }
+    protected function _onMessage($client) {
+        if (isset($this->handshakes[intval($client)])) {
+            if ($this->handshakes[intval($client)]) {//если уже было получено рукопожатие от клиента
+                return;//то до отправки ответа от сервера читать здесь пока ничего не надо
             }
 
-            stream_select($read, $write, $except = null, null);//обновляем массив сокетов, которые можно обработать
-
-            if (in_array($this->server, $read)) { //на серверный сокет пришёл запрос от нового клиента
-                //подключаемся к нему и делаем рукопожатие, согласно протоколу вебсокета
-                if ((count($this->clients) < self::MAX_SOCKETS) && ($client = @stream_socket_accept($this->server, 0))) {
-                    stream_set_blocking($client, 0);
-                    $this->clients[intval($client)] = $client;
-                    $this->handshakes[intval($client)] = '';//отмечаем, что нужно сделать рукопожатие
-                }
-
-                //удаляем сервеный сокет из массива, чтобы не обработать его в этом цикле ещё раз
-                unset($read[array_search($this->server, $read)]);
+            if (!$this->handshake($client)) {
+                $this->close($client);
             }
-
-            if (in_array($this->master, $read)) { //пришли данные от мастера
-                $data = fread($this->master, self::SOCKET_BUFFER_SIZE);
-                $this->addToRead($this->master, $data);
-
-                while ($data = $this->read($this->master)) {
-                    $this->onSend($data);//вызываем пользовательский сценарий
-                }
-
-                //удаляем мастера из массива, чтобы не обработать его в этом цикле ещё раз
-                unset($read[array_search($this->master, $read)]);
-            }
-
-            if ($read) {//пришли данные от подключенных клиентов
-                foreach ($read as $client) {
-                    if (isset($this->handshakes[intval($client)])) {
-                        if ($this->handshakes[intval($client)]) {//если уже было получено рукопожатие от клиента
-                            continue;//то до отправки ответа от сервера читать здесь пока ничего не надо
-                        }
-
-                        if (!$this->handshake($client)) {
-                            $this->close($client);
-                        }
-                    } else {
-                        $data = fread($client, self::SOCKET_BUFFER_SIZE);
-
-                        if (!strlen($data) || !$this->addToRead($client, $data)) { //соединение было закрыто или превышен размер буфера
-                            $this->close($client);
-                            continue;
-                        }
-
-                        $client = intval($client);
-                        while (($data = $this->decode($client)) && mb_check_encoding($data['payload'], 'utf-8')) {//декодируем буфер (в нём может быть несколько сообщений)
-                            $this->onMessage($client, $data);//вызываем пользовательский сценарий
-                        }
-                    }
-                }
-            }
-
-            if ($write) {
-                foreach ($write as $client) {
-                    if (is_resource($client)) {//проверяем, что мы его ещё не закрыли во время чтения
-                        $this->sendBuffer($client);
-                    }
-                }
+        } else {
+            $client = intval($client);
+            while (($data = $this->decode($client)) && mb_check_encoding($data['payload'], 'utf-8')) {//декодируем буфер (в нём может быть несколько сообщений)
+                $this->onMessage($client, $data);//вызываем пользовательский сценарий
             }
         }
+    }
+
+    protected function _onService($client, $data) {
+        $this->onMasterMessage($data);
+    }
+
+    protected function close($client) {
+        parent::close($client);
+
+        if (isset($this->handshakes[$client])) {
+            unset($this->handshakes[$client]);
+        } else {
+            $this->onClose(intval($client));//вызываем пользовательский сценарий
+        }
+    }
+
+    protected function sendToClient($client, $data) {
+        parent::write($client, $this->encode($data), $delimiter = '');
+    }
+
+    protected function sendToMaster($data) {
+        parent::write($this->master, $data, self::SOCKET_MESSAGE_DELIMITER);
     }
 
     protected function handshake($client) {
@@ -127,17 +91,6 @@ abstract class WebsocketWorker extends WebsocketGeneric
         $this->onOpen($client);
 
         return true;
-    }
-
-    protected function close($client) {
-        @fclose($client);
-        $client = intval($client);
-        unset($this->clients[$client]);
-        unset($this->handshakes[$client]);
-        unset($this->write[$client]);
-        unset($this->read[$client]);
-
-        $this->onClose($client);//вызываем пользовательский сценарий
     }
 
     protected function encode($payload, $type = 'text', $masked = false)
@@ -288,9 +241,11 @@ abstract class WebsocketWorker extends WebsocketGeneric
         return $decodedData;
     }
 
+    abstract protected function onMessage($client, $data);
+
     abstract protected function onOpen($client);
 
     abstract protected function onClose($client);
 
-    abstract protected function onSend($data);
+    abstract protected function onMasterMessage($data);
 }

@@ -38,7 +38,7 @@ class WebsocketServer
             $master = new $this->config['master'] ($service, $workers);//мастер будет обрабатывать сообщения от скриптов и пересылать их в воркеры
             $master->start();
         } else {//воркер
-            $worker = new $this->config['worker'] ($server, array($master));
+            $worker = new $this->config['worker'] ($server, $master);
             $worker->start();
         }
     }

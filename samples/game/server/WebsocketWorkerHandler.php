@@ -111,7 +111,7 @@ class WebsocketWorkerHandler extends WebsocketWorker
         }
     }
 
-    protected function onSend($data) {//вызывается при получении сообщения от мастера
+    protected function onMasterMessage($data) {//вызывается при получении сообщения от мастера
 
     }
 
@@ -126,7 +126,7 @@ class WebsocketWorkerHandler extends WebsocketWorker
         }
     }
 
-    private function sendToClient($client, $cmd, $data) {
+    protected function sendToClient($client, $cmd, $data) {
         $this->write($client, $this->encode($this->pack($cmd, $data)));
     }
 
