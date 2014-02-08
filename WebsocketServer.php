@@ -22,7 +22,7 @@ class WebsocketServer
         $service = null;
         if (!empty($this->config['localsocket'])) {
             //создаём сокет для обработки сообщений от скриптов
-            $service = stream_socket_server($this->localsocket, $errorNumber, $errorString);
+            $service = stream_socket_server($this->config['localsocket'], $errorNumber, $errorString);
             stream_set_blocking($service, 0);
 
             if (!$service) {
@@ -71,9 +71,9 @@ class WebsocketServer
         $pid = @file_get_contents($this->config['pid']);
         if ($pid) {
             posix_kill($pid, SIGTERM);
-            sleep(1);
-            posix_kill($pid, SIGKILL);
             unlink($this->config['pid']);
+            /*sleep(1);
+            posix_kill($pid, SIGKILL);
             sleep(1);
             if ($websocket = @stream_socket_client ($this->config['websocket'], $errno, $errstr)) {
                 stream_socket_shutdown($websocket, STREAM_SHUT_RDWR);
@@ -83,7 +83,7 @@ class WebsocketServer
                 if ($localsocket = stream_socket_client ($this->config['localsocket'], $errno, $errstr)) {
                     stream_socket_shutdown($localsocket, STREAM_SHUT_RDWR);
                 }
-            }
+            }*/
         } else {
             die("already stopped\r\n");
         }

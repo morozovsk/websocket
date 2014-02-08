@@ -112,7 +112,7 @@ class WebsocketWorkerHandler extends WebsocketWorker
     }
 
     protected function onSend($data) {//вызывается при получении сообщения от мастера
-        $this->sendHelper($data);
+
     }
 
     protected function sendToMaster($cmd, $data) {//отправляем сообщение на мастер, чтобы он разослал его на все воркеры

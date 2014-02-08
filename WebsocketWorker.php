@@ -292,7 +292,5 @@ abstract class WebsocketWorker extends WebsocketGeneric
 
     abstract protected function onClose($client);
 
-    abstract protected function onMessage($client, $data);
-
     abstract protected function onSend($data);
 }
