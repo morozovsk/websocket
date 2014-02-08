@@ -7,76 +7,67 @@ abstract class WebsocketWorker extends WebsocketGeneric
 
     public function __construct($server, $master) {
         $this->server = $server;
-        $this->services = array($master);
+        $this->services = array($this->getIdByConnection($master) => $master);
 
         $this->master = $master;
         $this->pid = posix_getpid();
     }
 
-    protected function _onOpen($client) {
-        $this->handshakes[intval($client)] = '';//отмечаем, что нужно сделать рукопожатие
+    protected function _onOpen($connectionId) {
+        $this->handshakes[$connectionId] = '';//отмечаем, что нужно сделать рукопожатие
     }
 
-    protected function _onMessage($client) {
-        if (isset($this->handshakes[intval($client)])) {
-            if ($this->handshakes[intval($client)]) {//если уже было получено рукопожатие от клиента
+    protected function _onMessage($connectionId) {
+        if (isset($this->handshakes[$connectionId])) {
+            if ($this->handshakes[$connectionId]) {//если уже было получено рукопожатие от клиента
                 return;//то до отправки ответа от сервера читать здесь пока ничего не надо
             }
 
-            if (!$this->handshake($client)) {
-                $this->close($client);
+            if (!$this->handshake($connectionId)) {
+                $this->close($connectionId);
             }
         } else {
-            $client = intval($client);
-            while (($data = $this->decode($client)) && mb_check_encoding($data['payload'], 'utf-8')) {//декодируем буфер (в нём может быть несколько сообщений)
-                $this->onMessage($client, $data);//вызываем пользовательский сценарий
+            while (($data = $this->decode($connectionId)) && mb_check_encoding($data['payload'], 'utf-8')) {//декодируем буфер (в нём может быть несколько сообщений)
+                $this->onMessage($connectionId, $data);//вызываем пользовательский сценарий
             }
         }
     }
 
-    protected function _onService($client, $data) {
+    protected function _onService($connectionId, $data) {
         $this->onMasterMessage($data);
     }
 
-    protected function close($client) {
-        parent::close($client);
+    protected function close($connectionId) {
+        parent::close($connectionId);
 
-        if (isset($this->handshakes[$client])) {
-            unset($this->handshakes[$client]);
+        if (isset($this->handshakes[$connectionId])) {
+            unset($this->handshakes[$connectionId]);
         } else {
-            $this->onClose(intval($client));//вызываем пользовательский сценарий
+            $this->onClose($connectionId);//вызываем пользовательский сценарий
         }
     }
 
-    protected function sendToClient($client, $data) {
-        parent::write($client, $this->encode($data), $delimiter = '');
+    protected function sendToClient($connectionId, $data) {
+        parent::write($connectionId, $this->encode($data), $delimiter = '');
     }
 
     protected function sendToMaster($data) {
         parent::write($this->master, $data, self::SOCKET_MESSAGE_DELIMITER);
     }
 
-    protected function handshake($client) {
+    protected function handshake($connectionId) {
         //считываем загаловки из соединения
-        $data = fread($client, self::SOCKET_BUFFER_SIZE);
-
-        $client = intval($client);
-
-        if (!$this->addToRead($client, $data)) {
-            return false;
-        }
-
-        if (!strpos($this->read[$client], "\r\n\r\n")) {
+        if (!strpos($this->read[$connectionId], "\r\n\r\n")) {
             return true;
         }
 
-        preg_match("/Sec-WebSocket-Key: (.*)\r\n/", $this->read[$client], $match);
+        preg_match("/Sec-WebSocket-Key: (.*)\r\n/", $this->read[$connectionId], $match);
 
         if (empty($match[1])) {
             return false;
         }
 
-        $this->read[$client] = '';
+        $this->read[$connectionId] = '';
 
         //отправляем заголовок согласно протоколу вебсокета
         $SecWebSocketAccept = base64_encode(pack('H*', sha1($match[1] . '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')));
@@ -85,10 +76,10 @@ abstract class WebsocketWorker extends WebsocketGeneric
             "Connection: Upgrade\r\n" .
             "Sec-WebSocket-Accept:$SecWebSocketAccept\r\n\r\n";
 
-        $this->write($client, $upgrade);
-        unset($this->handshakes[$client]);
+        $this->write($connectionId, $upgrade);
+        unset($this->handshakes[$connectionId]);
 
-        $this->onOpen($client);
+        $this->onOpen($connectionId);
 
         return true;
     }
@@ -241,11 +232,11 @@ abstract class WebsocketWorker extends WebsocketGeneric
         return $decodedData;
     }
 
-    abstract protected function onMessage($client, $data);
+    abstract protected function onMessage($connectionId, $data);
 
-    abstract protected function onOpen($client);
+    abstract protected function onOpen($connectionId);
 
-    abstract protected function onClose($client);
+    abstract protected function onClose($connectionId);
 
     abstract protected function onMasterMessage($data);
 }

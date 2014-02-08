@@ -2,12 +2,16 @@
 
 class WebsocketMasterHandler extends WebsocketMaster
 {
-    protected function onMessage($client, $data) //вызывается при получении сообщения от воркера или скриптов
+    protected function onWorkerMessage($connectionId, $data) //вызывается при получении сообщения от воркера или скриптов
     {
-        foreach ($this->workers as $worker) { //пересылаем данные во все воркеры
-            if ($worker !== $client) {
-                $this->write($worker, $data, self::SOCKET_MESSAGE_DELIMITER);
+        foreach ($this->workers as $workerId => $worker) { //пересылаем данные во все воркеры
+            if ($workerId !== $connectionId) {
+                $this->sendToWorker($worker, $data);
             }
         }
+    }
+
+    protected function onMessage($connectionId, $data) {
+
     }
 }
