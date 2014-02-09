@@ -48,7 +48,9 @@ abstract class WebsocketWorker extends WebsocketGeneric
     }
 
     protected function sendToClient($connectionId, $data) {
-        $this->_write($connectionId, $this->_encode($data));
+        if (!isset($this->_handshakes[$connectionId])) {
+            $this->_write($connectionId, $this->_encode($data));
+        }
     }
 
     protected function sendToMaster($data) {
