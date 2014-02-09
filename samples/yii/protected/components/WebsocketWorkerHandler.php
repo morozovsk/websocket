@@ -4,7 +4,7 @@
 class WebsocketWorkerHandler extends WebsocketWorker
 {
     protected function onOpen($connectionId) {//вызывается при соединении с новым клиентом
-        //$this->write($connectionId, $this->encode('Чтобы общаться в чате введите ник, под которым вы будете отображаться. Можно использовать английские буквы и цифры.'));
+
     }
 
     protected function onClose($connectionId) {//вызывается при закрытии соединения клиентом

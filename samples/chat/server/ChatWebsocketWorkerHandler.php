@@ -4,7 +4,7 @@
 class ChatWebsocketWorkerHandler extends WebsocketWorker
 {
     protected function onOpen($connectionId) {//вызывается при соединении с новым клиентом
-        //$this->write($connectionId, $this->encode('Чтобы общаться в чате введите ник, под которым вы будете отображаться. Можно использовать английские буквы и цифры.'));
+
     }
 
     protected function onClose($connectionId) {//вызывается при закрытии соединения клиентом
@@ -19,11 +19,11 @@ class ChatWebsocketWorkerHandler extends WebsocketWorker
         //var_export($data);
         //шлем всем сообщение, о том, что пишет один из клиентов
         //echo $data['payload'] . "\n";
-        $message = 'пользователь #' . $connectionId . ' (' . $this->pid . '): ' . str_replace(self::SOCKET_MESSAGE_DELIMITER, '', strip_tags($data['payload']));
+        $message = 'пользователь #' . $connectionId . ' (' . $this->pid . '): ' . strip_tags($data['payload']);
         $this->sendToMaster($message);
 
         foreach ($this->clients as $clientId => $client) {
-            $this->sendToClient($clientId, $data);
+            $this->sendToClient($clientId, $message);
         }
     }
 

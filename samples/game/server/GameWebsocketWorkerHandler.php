@@ -119,7 +119,7 @@ class GameWebsocketWorkerHandler extends WebsocketWorker
     }
 
     private function sendPacketToClients($cmd, $data) {
-        $data = $this->encode($this->pack($cmd, $data));
+        $data = $this->pack($cmd, $data);
         foreach ($this->clients as $connectionId) {
             $this->sendToClient($connectionId, $data);
         }

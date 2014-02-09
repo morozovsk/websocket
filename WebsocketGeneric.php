@@ -7,18 +7,18 @@ abstract class WebsocketGeneric
     const MAX_SOCKETS = 1000;
     const SOCKET_MESSAGE_DELIMITER = "\n";
     protected $clients = array();
-    protected $server = null;
-    protected $services = array();
-    protected $read = array();
-    protected $write = array();
+    protected $_server = null;
+    protected $_services = array();
+    protected $_read = array();
+    protected $_write = array();
 
     public function start() {
         while (true) {
             //подготавливаем массив всех сокетов, которые нужно обработать
-            $read = array_merge($this->services, $this->clients);
+            $read = array_merge($this->_services, $this->clients);
 
-            if ($this->server) {
-                $read[] = $this->server;
+            if ($this->_server) {
+                $read[] = $this->_server;
             }
 
             if (!$read) {
@@ -27,8 +27,8 @@ abstract class WebsocketGeneric
 
             $write = array();
 
-            if ($this->write) {
-                foreach ($this->write as $connectionId => $buffer) {
+            if ($this->_write) {
+                foreach ($this->_write as $connectionId => $buffer) {
                     if ($buffer) {
                         $write[] = $this->getConnectionById($connectionId);
                     }
@@ -39,8 +39,8 @@ abstract class WebsocketGeneric
 
             stream_select($read, $write, $except, null);//обновляем массив сокетов, которые можно обработать
 
-            if ($this->server && in_array($this->server, $read)) { //на серверный сокет пришёл запрос от нового клиента
-                if ((count($this->clients) < self::MAX_SOCKETS) && ($client = @stream_socket_accept($this->server, 0))) {
+            if ($this->_server && in_array($this->_server, $read)) { //на серверный сокет пришёл запрос от нового клиента
+                if ((count($this->clients) < self::MAX_SOCKETS) && ($client = @stream_socket_accept($this->_server, 0))) {
                     stream_set_blocking($client, 0);
                     $clientId = $this->getIdByConnection($client);
                     $this->clients[$clientId] = $client;
@@ -48,10 +48,10 @@ abstract class WebsocketGeneric
                 }
 
                 //удаляем сервеный сокет из массива, чтобы не обработать его в этом цикле ещё раз
-                unset($read[array_search($this->server, $read)]);
+                unset($read[array_search($this->_server, $read)]);
             }
 
-            if ($services = array_intersect($this->services, $read)) {
+            if ($services = array_intersect($this->_services, $read)) {
                 foreach ($services as $service) {
                     //удаляем сервис из массива, чтобы не обработать его в этом цикле ещё раз
                     unset($read[array_search($service, $read)]);
@@ -63,7 +63,7 @@ abstract class WebsocketGeneric
                         continue;
                     }
 
-                    while ($data = $this->readFromBuffer($connectionId)) {
+                    while ($data = $this->_readFromBuffer($connectionId)) {
                         $this->_onService($connectionId, $data);//вызываем пользовательский сценарий
                     }
                 }
@@ -107,32 +107,32 @@ abstract class WebsocketGeneric
 
         if (isset($this->clients[$connectionId])) {
             unset($this->clients[$connectionId]);
-        } elseif (isset($this->services[$connectionId])) {
-            unset($this->services[$connectionId]);
-        } elseif($this->getConnectionById($connectionId) == $this->server) {
-            unset($this->server);
+        } elseif (isset($this->_services[$connectionId])) {
+            unset($this->_services[$connectionId]);
+        } elseif($this->getConnectionById($connectionId) == $this->_server) {
+            unset($this->_server);
         }
 
-        unset($this->write[$connectionId]);
-        unset($this->read[$connectionId]);
+        unset($this->_write[$connectionId]);
+        unset($this->_read[$connectionId]);
     }
 
-    protected function write($connectionId, $data, $delimiter = '') {
-        @$this->write[$connectionId] .=  $data . $delimiter;
+    protected function _write($connectionId, $data, $delimiter = '') {
+        @$this->_write[$connectionId] .=  $data . $delimiter;
     }
 
     protected function _sendBuffer($connect) {
         $connectionId = $this->getIdByConnection($connect);
-        $written = fwrite($connect, $this->write[$connectionId], self::SOCKET_BUFFER_SIZE);
-        $this->write[$connectionId] = substr($this->write[$connectionId], $written);
+        $written = fwrite($connect, $this->_write[$connectionId], self::SOCKET_BUFFER_SIZE);
+        $this->_write[$connectionId] = substr($this->_write[$connectionId], $written);
     }
 
-    protected function readFromBuffer($connectionId) {
+    protected function _readFromBuffer($connectionId) {
         $data = '';
 
-        if (false !== ($pos = strpos($this->read[$connectionId], self::SOCKET_MESSAGE_DELIMITER))) {
-            $data = substr($this->read[$connectionId], 0, $pos);
-            $this->read[$connectionId] = substr($this->read[$connectionId], $pos + strlen(self::SOCKET_MESSAGE_DELIMITER));
+        if (false !== ($pos = strpos($this->_read[$connectionId], self::SOCKET_MESSAGE_DELIMITER))) {
+            $data = substr($this->_read[$connectionId], 0, $pos);
+            $this->_read[$connectionId] = substr($this->_read[$connectionId], $pos + strlen(self::SOCKET_MESSAGE_DELIMITER));
         }
 
         return $data;
@@ -143,13 +143,13 @@ abstract class WebsocketGeneric
 
         if (!strlen($data)) return false;
 
-        @$this->read[$connectionId] .= $data;//добавляем полученные данные в буфер чтения
-        return strlen($this->read[$connectionId]) < self::MAX_SOCKET_BUFFER_SIZE;
+        @$this->_read[$connectionId] .= $data;//добавляем полученные данные в буфер чтения
+        return strlen($this->_read[$connectionId]) < self::MAX_SOCKET_BUFFER_SIZE;
     }
 
     protected function getConnectionById($connectionId) {
         return isset($this->clients[$connectionId]) ? $this->clients[$connectionId] :
-            (isset($this->services[$connectionId]) ? $this->services[$connectionId] : $this->server);
+            (isset($this->_services[$connectionId]) ? $this->_services[$connectionId] : $this->_server);
     }
 
     protected function getIdByConnection($connection) {

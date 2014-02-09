@@ -78,13 +78,13 @@ class Chat2WebsocketWorkerHandler extends WebsocketWorker
     }
 
     protected function sendPacketToMaster($cmd, $data) {//отправляем сообщение на мастер, чтобы он разослал его на все воркеры
-        $this->sendToMaster($this->master, $this->pack($cmd, $data));
+        $this->sendToMaster($this->pack($cmd, $data));
     }
 
     private function sendPacketToClients($cmd, $data) {
         $data = $this->pack($cmd, $data);
         foreach ($this->clients as $clientId => $client) {
-            $this->sendToClient($clientId, $cmd, $data);
+            $this->sendToClient($clientId, $data);
         }
     }
 
