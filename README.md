@@ -12,7 +12,7 @@
 * yii - тот же чат, но с дополнительной возможностью отправлять свои сообщения из скриптов со страниц сайта или крона, используя Yii::app()->websocket->send('всем привет');
 
 Использование примеров в консоли:
-* запуск: php index.php start или nohup php index.php start и ctrl+z
+* запуск: php index.php start или nohup php index.php start &
 * остановка: php index.php stop
 
 Описание здесь:
