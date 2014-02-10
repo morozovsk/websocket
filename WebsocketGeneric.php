@@ -9,8 +9,8 @@ abstract class WebsocketGeneric
     protected $clients = array();
     protected $_server = null;
     protected $_services = array();
-    protected $_read = array();
-    protected $_write = array();
+    protected $_read = array();//буферы чтения
+    protected $_write = array();//буферы заииси
 
     public function start() {
         while (true) {
