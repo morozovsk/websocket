@@ -152,9 +152,9 @@ abstract class WebsocketWorker extends WebsocketGeneric
         return $frame;
     }
 
-    protected function _decode($connect)
+    protected function _decode($connectionId)
     {
-        $data = $this->_read[$connect];
+        $data = $this->_read[$connectionId];
 
         $unmaskedPayload = '';
         $decodedData = array();
@@ -215,7 +215,7 @@ abstract class WebsocketWorker extends WebsocketGeneric
         if (strlen($data) < $dataLength) {
             return false;
         } else {
-            $this->_read[$connect] = substr($data, $dataLength);
+            $this->_read[$connectionId] = substr($data, $dataLength);
         }
 
         if ($isMasked) {
