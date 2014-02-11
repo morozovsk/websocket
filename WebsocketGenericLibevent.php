@@ -14,32 +14,40 @@ abstract class WebsocketGeneric
     private $base = NULL;
     private $event = NULL;
     private $buffers = array();//буферы событий
+    private $events = array();
 
     public function start() {
         $this->base = event_base_new();
-        $this->event = event_new();
 
         if ($this->_server) {
+            $this->event = event_new();
             event_set($this->event, $this->_server, EV_READ | EV_PERSIST, array($this, 'accept'), $this->base);
-        } else {//todo
-            event_set($this->event, fopen('/dev/null', 'r'), EV_READ | EV_PERSIST, array($this, 'accept'), $this->base);
+            event_base_set($this->event, $this->base);
+            event_add($this->event);
         }
 
-        foreach ($this->_services as $service) {
-            $connectionId =$this->getIdByConnection($service);
-            $buffer = event_buffer_new($service, array($this, 'onRead'), array($this, 'onWrite'), array($this, 'onError'), $connectionId);
-            event_buffer_base_set($buffer, $this->base);
-            //event_buffer_timeout_set($buffer, 1, 1);
-            event_buffer_watermark_set($buffer, EV_READ, 0, 0xffffff);
-            event_buffer_priority_set($buffer, 10);
-            event_buffer_enable($buffer, EV_READ | EV_WRITE | EV_PERSIST);
-            $this->buffers[$connectionId] = $buffer;
+        foreach ($this->_services as $serviceId => $service) {
+            $event = event_new();
+            event_set($event, $service, EV_READ | EV_PERSIST | EV_WRITE, array($this, 'service'), $this->base);
+            event_base_set($event, $this->base);
+            event_add($event);
+            $this->events[$serviceId] = $event;
         }
-
-        event_base_set($this->event, $this->base);
-        event_add($this->event);
 
         event_base_loop($this->base);
+    }
+
+    private function service($connection, $flag, $base) {
+        $connectionId = $this->getIdByConnection($connection);
+        $buffer = event_buffer_new($connection, array($this, 'onRead'), array($this, 'onWrite'), array($this, 'onError'), $connectionId);
+        event_buffer_base_set($buffer, $this->base);
+        event_buffer_watermark_set($buffer, EV_READ, 0, 0xffffff);
+        event_buffer_priority_set($buffer, 10);
+        event_buffer_enable($buffer, EV_READ | EV_WRITE | EV_PERSIST);
+        $this->buffers[$connectionId] = $buffer;
+        event_del($this->events[$connectionId]);
+        event_free($this->events[$connectionId]);
+        unset($this->events[$connectionId]);
     }
 
     private function accept($socket, $flag, $base) {
@@ -48,7 +56,6 @@ abstract class WebsocketGeneric
         stream_set_blocking($connection, 0);
         $buffer = event_buffer_new($connection, array($this, 'onRead'), array($this, 'onWrite'), array($this, 'onError'), $connectionId);
         event_buffer_base_set($buffer, $this->base);
-        //event_buffer_timeout_set($buffer, 1, 1);
         event_buffer_watermark_set($buffer, EV_READ, 0, 0xffffff);
         event_buffer_priority_set($buffer, 10);
         event_buffer_enable($buffer, EV_READ | EV_WRITE | EV_PERSIST);
@@ -82,27 +89,31 @@ abstract class WebsocketGeneric
     }
 
     private function onError($buffer, $error, $connectionId) {
-        echo "An error has occurred: $connectionId\n";
+        //echo "Connection closed: $connectionId\n";
         //var_dump($error);
         $this->close($connectionId);
     }
 
     protected function close($connectionId) {
-        //var_dump($connectionId, $qwe, $this->clients, $this->buffers, $this->_services);
         fclose($this->getConnectionById($connectionId));
 
         if (isset($this->clients[$connectionId])) {
             unset($this->clients[$connectionId]);
         } elseif (isset($this->_services[$connectionId])) {
             unset($this->_services[$connectionId]);
+            if (!$this->_services) {
+                exit();
+            }
         } elseif($this->getConnectionById($connectionId) == $this->_server) {
-            unset($this->_server);
+            /*unset($this->_server);
+            event_del($this->event);
+            event_free($this->event);
+            exit();*/
         }
 
         unset($this->_write[$connectionId]);
         unset($this->_read[$connectionId]);
 
-        //todo:event_base_free()
         event_buffer_disable($this->buffers[$connectionId], EV_READ | EV_WRITE);
         event_buffer_free($this->buffers[$connectionId]);
         unset($this->buffers[$connectionId]);
