@@ -12,7 +12,7 @@ abstract class WebsocketGeneric
     protected $_read = array();//буферы чтения
     protected $_write = array();//буферы заииси
     public $timer = null;
-    public $_time = null;
+    private $_time = null;
 
     public function start() {
         $this->_time = microtime(true);

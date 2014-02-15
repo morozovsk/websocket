@@ -15,6 +15,7 @@ abstract class WebsocketGeneric
     private $event = NULL;
     private $buffers = array();//буферы событий
     private $events = array();
+    public $timer = null;
 
     public function start() {
         $this->base = event_base_new();
@@ -34,7 +35,21 @@ abstract class WebsocketGeneric
             $this->events[$serviceId] = $event;
         }
 
+        if ($this->timer) {
+            $timer = event_timer_new();
+            event_timer_set($timer, array($this, '_onTimer'), $timer);
+            event_base_set($timer, $this->base);
+            //event_timer_pending($timer, $this->timer * 1000000);
+            event_timer_add($timer, $this->timer * 1000000);
+        }
+
+
         event_base_loop($this->base);
+    }
+
+    private function _onTimer($connection, $flag, $timer) {
+        event_timer_add($timer, $this->timer * 1000000);
+        $this->onTimer();
     }
 
     private function service($connection, $flag, $base) {
