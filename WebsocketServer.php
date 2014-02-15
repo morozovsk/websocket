@@ -12,7 +12,7 @@ class WebsocketServer
             die("already started\r\n");
         }
         //открываем серверный сокет
-        $server = stream_socket_server($this->config['websocket'], $errorNumber, $errorString);
+        $server = stream_socket_server($this->config['worker']['socket'], $errorNumber, $errorString);
         stream_set_blocking($server, 0);
 
         if (!$server) {
@@ -20,9 +20,9 @@ class WebsocketServer
         }
 
         $service = null;
-        if (!empty($this->config['localsocket'])) {
+        if (!empty($this->config['master']['socket'])) {
             //создаём сокет для обработки сообщений от скриптов
-            $service = stream_socket_server($this->config['localsocket'], $errorNumber, $errorString);
+            $service = stream_socket_server($this->config['master']['socket'], $errorNumber, $errorString);
             stream_set_blocking($service, 0);
 
             if (!$service) {
@@ -33,12 +33,20 @@ class WebsocketServer
         list($pid, $master, $workers) = $this->spawnWorkers();//создаём дочерние процессы
 
         if ($pid) {//мастер
-            file_put_contents($this->config['pid'], $pid);
+            file_put_contents($this->config['master']['pid'], $pid);
             fclose($server);//мастер не будет обрабатывать входящие соединения на основном сокете
-            $master = new $this->config['master'] ($service, $workers);//мастер будет обрабатывать сообщения от скриптов и пересылать их в воркеры
+            $masterClass = $this->config['master']['class'];
+            $master = new $masterClass ($service, $workers);//мастер будет обрабатывать сообщения от скриптов и пересылать их в воркеры
+            if (!empty($this->config['master']['timer'])) {
+                $master->timer = $this->config['worker']['timer'];
+            }
             $master->start();
         } else {//воркер
-            $worker = new $this->config['worker'] ($server, $master);
+            $workerClass = $this->config['worker']['class'];
+            $worker = new $workerClass ($server, $master);
+            if (!empty($this->config['worker']['timer'])) {
+                $worker->timer = $this->config['worker']['timer'];
+            }
             $worker->start();
         }
     }
@@ -47,7 +55,7 @@ class WebsocketServer
         $master = null;
         $workers = array();
 
-        for ($i=0; $i<$this->config['workers']; $i++) {
+        for ($i=0; $i<$this->config['master']['workers']; $i++) {
             //создаём парные сокеты, через них будут связываться мастер и воркер
             $pair = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
 
@@ -68,10 +76,10 @@ class WebsocketServer
     }
 
     public function stop() {
-        $pid = @file_get_contents($this->config['pid']);
+        $pid = @file_get_contents($this->config['master']['pid']);
         if ($pid) {
             posix_kill($pid, SIGTERM);
-            unlink($this->config['pid']);
+            unlink($this->config['master']['pid']);
             /*sleep(1);
             posix_kill($pid, SIGKILL);
             sleep(1);
@@ -90,7 +98,7 @@ class WebsocketServer
     }
 
     public function restart() {
-        $pid = @file_get_contents($this->config['pid']);
+        $pid = @file_get_contents($this->config['master']['pid']);
         if ($pid) {
             $this->stop();
         }

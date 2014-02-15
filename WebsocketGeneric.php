@@ -11,8 +11,11 @@ abstract class WebsocketGeneric
     protected $_services = array();
     protected $_read = array();//буферы чтения
     protected $_write = array();//буферы заииси
+    public $timer = null;
+    public $_time = null;
 
     public function start() {
+        $this->_time = microtime(true);
         while (true) {
             //подготавливаем массив всех сокетов, которые нужно обработать
             $read = array_merge($this->_services, $this->clients);
@@ -37,7 +40,12 @@ abstract class WebsocketGeneric
 
             $except = $read;
 
-            stream_select($read, $write, $except, null);//обновляем массив сокетов, которые можно обработать
+            stream_select($read, $write, $except, $this->timer ? $this->timer - microtime(true) + $this->_time : null);//обновляем массив сокетов, которые можно обработать
+
+            if ($this->timer && (microtime(true) >= $this->_time + $this->timer)) {
+                $this->_time = microtime(true);
+                $this->onTimer();
+            }
 
             if ($this->_server && in_array($this->_server, $read)) { //на серверный сокет пришёл запрос от нового клиента
                 if ((count($this->clients) < self::MAX_SOCKETS) && ($client = @stream_socket_accept($this->_server, 0))) {

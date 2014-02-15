@@ -6,11 +6,17 @@ if (empty($argv[1]) || !in_array($argv[1], array('start', 'stop', 'restart'))) {
 }
 
 $config = array(
-    'websocket' => 'tcp://127.0.0.1:8000',
-    'workers' => 1,
-    'pid' => '/tmp/websocket.pid',
-    'master' => 'ChatWebsocketMasterHandler',
-    'worker' => 'ChatWebsocketWorkerHandler'
+    'master' => array(
+        'class' => 'ChatWebsocketMasterHandler',
+        //'socket' => 'tcp://127.0.0.1:8001',// unix:///tmp/mysock
+        'workers' => 1,
+        'pid' => '/tmp/websocket.pid',
+
+    ),
+    'worker' => array(
+        'socket' => 'tcp://127.0.0.1:8000',
+        'class' => 'ChatWebsocketWorkerHandler',
+    ),
 );
 
 require_once('../../../WebsocketGeneric.php');

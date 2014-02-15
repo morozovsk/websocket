@@ -6,11 +6,16 @@ if (empty($argv[1]) || !in_array($argv[1], array('start', 'stop', 'restart'))) {
 }
 
 $config = array(
-    'websocket' => 'tcp://127.0.0.1:8002',
-    'workers' => 1,
-    'pid' => '/tmp/websocket2.pid',
-    'master' => 'GameWebsocketMasterHandler',
-    'worker' => 'GameWebsocketWorkerHandler'
+    'master' => array(
+        'class' => 'GameWebsocketMasterHandler',
+        //'socket' => 'tcp://127.0.0.1:8001',// unix:///tmp/mysock
+        'workers' => 1,
+        'pid' => '/tmp/websocket2.pid',
+    ),
+    'worker' => array(
+        'socket' => 'tcp://127.0.0.1:8002',
+        'class' => 'GameWebsocketWorkerHandler',
+    ),
 );
 
 require_once('../../../WebsocketGeneric.php');
