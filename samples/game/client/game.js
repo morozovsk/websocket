@@ -1,57 +1,21 @@
-// 
-// Pashe programming lab! Wow! Cool! Vote for pashe!!!11
-//
-
-
-var w = 100;
-var h = 60;
-var cellsize = 10;
-
-
-// dir:   0 - up, 1 - down, 2 - left, 3 - right
-
 var paused = true;
 var keys = { up: false, down: false, left: false, right: false};
 
-var tankmodelsize = 3;
-var tankmodel = new Array(4);
-
-tankmodel[0] = [
-    0, 1, 0,
-    1, 1, 1,
-    1, 0, 1];
-tankmodel[1] = [
-    1, 0, 1,
-    1, 1, 1,
-    0, 1, 0];
-tankmodel[2] = [
-    0, 1, 1,
-    1, 1, 0,
-    0, 1, 1 ];
-tankmodel[3] = [
-    1, 1, 0,
-    0, 1, 1,
-    1, 1, 0 ];
-
 function applyKeys(tank) {
-    if ((keys.up && !keys.left && !keys.right) || (keys.up && (keys.left || keys.right) && tank.dir != 0))
-        tank.dir = 0;
-    else if (keys.down && !keys.left && !keys.right  || keys.down && (keys.left || keys.right) && tank.dir != 1)
-        tank.dir = 1;
-    else if ((keys.left && !keys.up && !keys.down) || (keys.left && (keys.up || keys.down) && tank.dir != 2))
-        tank.dir = 2;
-    else if ((keys.right && !keys.up && !keys.down) || (keys.right && (keys.up || keys.down) && tank.dir != 3))
-        tank.dir = 3;
+    if ((keys.up && !keys.left && !keys.right) || (keys.up && (keys.left || keys.right) && tank.dir != 'up'))
+        tank.dir = 'up';
+    else if (keys.down && !keys.left && !keys.right  || keys.down && (keys.left || keys.right) && tank.dir != 'down')
+        tank.dir = 'down';
+    else if ((keys.left && !keys.up && !keys.down) || (keys.left && (keys.up || keys.down) && tank.dir != 'left'))
+        tank.dir = 'left';
+    else if ((keys.right && !keys.up && !keys.down) || (keys.right && (keys.up || keys.down) && tank.dir != 'right'))
+        tank.dir = 'right';
 
     if (keys.up || keys.down || keys.left || keys.right) {
         ws.send(JSON.stringify(tank));
         paused = true;
     }
 }
-
-//
-// Drawing
-//
 
 function drawTank(tank, i) {
     if (!i) {
@@ -64,21 +28,15 @@ function drawTank(tank, i) {
         ctx.fillStyle = "#00bbbb";
     }
 
-    for (iy = 0; iy < tankmodelsize; iy++) {
-        for (ix = 0; ix < tankmodelsize; ix++) {
-            if (1 == tankmodel[ tank.dir ][iy * tankmodelsize + ix]) {
-                ctx.fillRect(cellsize * (tank.x + ix), cellsize * (tank.y + iy), cellsize - 1, cellsize - 1);
-            }
-        }
-    }
+    ctx.drawImage(tankmodel[tank.dir + (((tank.dir == 'left' || tank.dir == 'right') && tank.x % 2 || (tank.dir == 'up' || tank.dir == 'down') && tank.y % 2) ? '' : '1')], (i ? tank.x : w/2 - 1) * cellsize, (i ? tank.y : h/2 - 1) * cellsize, 4 * cellsize, 4 * cellsize);
 
-    ctx.fillText(tank.name, cellsize * tank.x, cellsize * (tank.y + 4));
+    ctx.fillText(tank.name, (i ? tank.x : w/2) * cellsize, ((i ? tank.y : h/2) + 4) * cellsize);
 
     if (tank.health) {
         ctx.fillStyle = "#000";
         ctx.font = "10px sans-serif";
         ctx.textBaseline = "bottom";
-        ctx.fillText(tank.health, cellsize * tank.x, cellsize * tank.y - 15);
+        ctx.fillText(tank.health, (i ? tank.x : w/2) * cellsize, ((i ? tank.y : h/2) - 2) * cellsize);
     }
 
     /*ctx.fillStyle = "#a5f5a5";
@@ -87,9 +45,31 @@ function drawTank(tank, i) {
 
 function draw() {
     ctx.clearRect(0, 0, w * cellsize, h * cellsize);
+    ctx.fillStyle = "#000000";
+    if (tanks[0].x < w/2) {
+        ctx.fillRect(0, 0, (w/2 - tanks[0].x - 1) * cellsize, h * cellsize);
+    }
+
+    if (tanks[0].y < h/2) {
+        ctx.fillRect(0, 0, w * cellsize, (h/2 - tanks[0].y - 1) * cellsize);
+    }
+
+    if (tanks[0].w - tanks[0].x < w/2) {
+        ctx.fillRect((w/2 - tanks[0].x + tanks[0].w) * cellsize, 0, w * cellsize, h * cellsize);
+    }
+
+    if (tanks[0].h - tanks[0].y < h/2) {
+        ctx.fillRect(0, (h/2 - tanks[0].y + tanks[0].h) * cellsize, w * cellsize, h * cellsize);
+    }
 
     for (i = 0; i < tanks.length; ++i)
         drawTank(tanks[i], i);
+}
+
+function draw_minimap(tank) {
+    minimap.clearRect(0, 0, 200, 200);
+    minimap.fillStyle = "#3b5998";
+    minimap.fillRect(Math.floor((tank.x-w/2) * 200 / tank.w), Math.floor((tank.y-h/2) * 200 / tank.h), Math.floor(w * 200 / tank.w), Math.floor(h * 200 / tank.h));
 }
 
 function keyDown(e) {

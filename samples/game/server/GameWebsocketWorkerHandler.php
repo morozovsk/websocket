@@ -7,9 +7,10 @@ class GameWebsocketWorkerHandler extends WebsocketWorker
     protected $logins = array();
     protected $ips = array();
 
-    protected $h = 60;
+    protected $h = 100;
     protected $w = 100;
     protected $tankmodelsize = 3;
+    protected $radius = 25;
 
     protected function onOpen($connectionId) {//вызывается при соединении с новым клиентом
         
@@ -36,16 +37,16 @@ class GameWebsocketWorkerHandler extends WebsocketWorker
                 $this->tanks[$connectionId]['dir'] = isset($tank['dir']) ? $tank['dir'] : $this->tanks[$connectionId]['dir'];
 
                 switch ($this->tanks[$connectionId]['dir']) {
-                    case 0:
+                    case 'up':
                         $this->tanks[$connectionId]['y']--;
                         break;
-                    case 1:
+                    case 'down':
                         $this->tanks[$connectionId]['y']++;
                         break;
-                    case 2:
+                    case 'left':
                         $this->tanks[$connectionId]['x']--;
                         break;
-                    case 3:
+                    case 'right':
                         $this->tanks[$connectionId]['x']++;
                         break;
                 }
@@ -66,11 +67,11 @@ class GameWebsocketWorkerHandler extends WebsocketWorker
                 foreach ($this->tanks as $tankId => $tank) {
                     if ($tankId != $connectionId && $this->tanks[$connectionId]['dir'] == $tank['dir'] &&
                         ($this->tanks[$connectionId]['x'] == $tank['x']
-                            && ($this->tanks[$connectionId]['y'] - 2 == $tank['y'] && $tank['dir'] == 0
-                                || $this->tanks[$connectionId]['y'] + 2 == $tank['y'] && $tank['dir'] == 1)
+                            && ($this->tanks[$connectionId]['y'] - 2 == $tank['y'] && $tank['dir'] == 'up'
+                                || $this->tanks[$connectionId]['y'] + 2 == $tank['y'] && $tank['dir'] == 'down')
                             || $this->tanks[$connectionId]['y'] == $tank['y']
-                            && ($this->tanks[$connectionId]['x'] - 2 == $tank['x'] && $tank['dir'] == 2
-                                || $this->tanks[$connectionId]['x'] + 2 == $tank['x'] && $tank['dir'] == 3)
+                            && ($this->tanks[$connectionId]['x'] - 2 == $tank['x'] && $tank['dir'] == 'left'
+                                || $this->tanks[$connectionId]['x'] + 2 == $tank['x'] && $tank['dir'] == 'right')
                         )) {
                         $this->tanks[$connectionId]['health']++;
                         //$this->tanks[$tankId]['health']--;
@@ -101,7 +102,7 @@ class GameWebsocketWorkerHandler extends WebsocketWorker
                 } else {
                     $this->logins[$match[0]] = $connectionId;
                     $this->sendPacketToClient($connectionId, 'message', 'Система: вы вошли в игру под именем ' . $match[0] . '. Для управления танком воспользуйтесь клавишами: вверх, вниз, вправо, влево или w s a d.');
-                    $this->tanks[$connectionId] = array('name' => $match[0], 'x' => rand(1, $this->w - 2), 'y' => rand(1, $this->h - 2), 'dir' => 0, 'health' => 0);
+                    $this->tanks[$connectionId] = array('name' => $match[0], 'x' => rand(5, $this->w - 5), 'y' => rand(5, $this->h - 5), 'dir' => 'up', 'health' => 0);
                     $this->sendTanks();
                 }
             } else {
@@ -135,10 +136,19 @@ class GameWebsocketWorkerHandler extends WebsocketWorker
 
     protected function sendTanks() {
         foreach ($this->tanks as $connectionId => $tank) {
-            $tanks = array($this->tanks[$connectionId]);
+            $current = $this->tanks[$connectionId];
+            //$current['x'] = 50;
+            //$current['y'] = 50;
+            $current['h'] = $this->h;
+            $current['w'] = $this->w;
+            $tanks = array($current);
             foreach ($this->tanks as $tankId => $tank) {
                 if ($tankId != $connectionId) {
-                    $tanks[] = $tank;
+                    $tank['x'] = $tank['x'] - $current['x'] + $this->radius;
+                    $tank['y'] = $tank['y'] - $current['y'] + $this->radius;
+                    if ($tank['x'] >= 0 && $tank['x'] <= $this->radius * 2 && $tank['y'] >= 0 && $tank['y'] <= $this->radius * 2) {
+                        $tanks[] = $tank;
+                    }
                 }
             }
 

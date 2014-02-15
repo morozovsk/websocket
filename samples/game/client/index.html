@@ -3,7 +3,6 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta name="language" content="en"/>
-    <link rel="stylesheet" type="text/css" href="css/main.css" />
     <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
     <script type="text/javascript" src="js/jquery.min.js"></script>
     <script type="text/javascript" src="js/bootstrap.min.js"></script>
@@ -11,19 +10,49 @@
     <title>demo game</title>
     <script type="text/javascript">
         $(function () {
-            canvas = document.getElementById("field");
-            ctx = canvas.getContext('2d');
+            w = h = 52;//416/52=8
+            var chat = $("#chat"), canvasdiv = $("#canvasdiv"), canvas = $("#canvas");
 
-            canvas.width = w * cellsize;
-            canvas.height = h * cellsize;
+            function resize() {
+                $("#rightdiv").css('height', $(window).height() - 70);
+                chat.css('height', $(window).height() - $("#divinput").height() - $("#minimap").height() - 70);
+                canvasdiv.css('width', $(window).width() - 350);
+                canvasdiv.css('height', $(window).height() - 70);
+                cellsize = Math.min(Math.floor(canvasdiv.height() / h), Math.floor(canvasdiv.width() / w));
+                canvas.attr('width', w * cellsize);
+                canvas.attr('height', h * cellsize);
+                padding = (canvasdiv.width() > canvas.width()) ? (canvasdiv.width() - canvas.width()) / 2 : 0;
+                canvasdiv.css('paddingLeft', padding);
+                canvasdiv.css('width', canvasdiv.width() - padding);
+            }
+
+            resize();
+
+            $(window).resize(function() {
+                resize();
+            });
+
+
+            //h = 50;//Math.floor(canvasdiv.height() / cellsize);
+
+            ctx = canvas[0].getContext('2d');
             ctx.font = "12px Arial";
+
+            minimap = $("#minimap")[0].getContext('2d');
+
+            tankmodel = {
+                up: document.getElementById('tank1up'),
+                down: document.getElementById('tank1down'),
+                left: document.getElementById('tank1left'),
+                right: document.getElementById('tank1right'),
+                up1: document.getElementById('tank1up1'),
+                down1: document.getElementById('tank1down1'),
+                left1: document.getElementById('tank1left1'),
+                right1: document.getElementById('tank1right1')
+            }
 
             window.addEventListener("keydown", keyDown, false);
             window.addEventListener("keyup", keyUp, false);
-            canvas.focus();
-
-            var chat = $("#chat");
-            chat.height($(window).height() - 80);
 
             function mainLoop(tank) {
                 if (!paused) {
@@ -38,7 +67,7 @@
                     chat.append("<p>Система: соединение открыто. Чтобы начать играть введите имя, под которым вы будете отображаться. В имени можно использовать английские буквы и цифры. Имя не должно превышать 10 символов.</p>");
                     chat.scrollTop($('#chat')[0].scrollHeight);
                     paused = true;
-                    mainLoop({});
+                    mainLoop({w: w, h: h});
                 };
                 ws.onclose = function () {
                     chat.append("<p>система: соединение закрыто, пытаюсь переподключиться</p>");
@@ -53,6 +82,11 @@
                         chat.scrollTop($('#chat')[0].scrollHeight);
                     } else if (pack.cmd == 'tanks') {
                         tanks = pack.data;
+                        //chat.append("<p>" + tanks[0].x + "," + tanks[0].y + "</p>");
+                        chat.scrollTop($('#chat')[0].scrollHeight);
+                        //console.log(tanks[0].x, tanks[0].y, tanks[0].w, tanks[0].h)
+                        draw_minimap(tanks[0]);
+                        canvas.css('backgroundPosition', -tanks[0].x * cellsize + 'px -' + tanks[0].y * cellsize + 'px');
 
                         draw();
 
@@ -65,25 +99,32 @@
 
             wsStart();
 
-            $('#chat').height($(window).height() - 80);
-
             $('#input').focus();
         });
 
     </script>
 </head>
-<body style="overflow: hidden;">
-<div id="canvasdiv" style="float: left;width: 1000px;margin:10px;margin-top: 0px;padding: 0px;" class="well">
-    <canvas id='field' tabindex="1">Canvas here</canvas>
+<body style="min-width: 640px;height: 100%; overflow: hidden;">
+<div id="canvasdiv" style="float: left;margin:10px;" class="well">
+    <canvas id='canvas' style="border: 1pt inset #000000;background: url(images/SmudgedDirt.png)" tabindex="1">Canvas here</canvas>
 </div>
 
-<div style="margin-left: 1000px; padding-left: 10px;">
-    <div id='chat' style="overflow: auto;margin: 10px; margin-bottom: 150px;" class="well">
+<div id="rightdiv" style="width: 220px; float:left;margin:10px;" class="well">
+    <img id="tank1up" src="images/textures/tank1-up-s1.png">
+    <img id="tank1down" src="images/textures/tank1-down-s1.png">
+    <img id="tank1left" src="images/textures/tank1-left-s1.png">
+    <img id="tank1right" src="images/textures/tank1-right-s1.png">
+    <img id="tank1up1" src="images/textures/tank1-up-s2.png">
+    <img id="tank1down1" src="images/textures/tank1-down-s2.png">
+    <img id="tank1left1" src="images/textures/tank1-left-s2.png">
+    <img id="tank1right1" src="images/textures/tank1-right-s2.png">
+    <canvas id='minimap' width="200" height="200" style="border: 1pt inset #000000;background: url(images/SmudgedDirt.png)" tabindex="1">Canvas here</canvas>
+    <div id='chat' style="overflow: auto">
         <p>Система: пожалуйста подождите, идёт соединение с сервером.</p>
     </div>
-    <div class="navbar-fixed-bottom" style="margin-left: 1020px; margin-bottom: -15px;margin-right: 20px;">
+    <div id="divinput" style="margin-left: -10px;margin-top: 10px;">
         <form onsubmit="ws.send($('input').val()); $('input').val(''); return false; ">
-            <input id="input" type="text" class="form-control" placeholder="Text input" style="width: 100%;" maxlength="140" autocomplete="off">
+        <input id="input" type="text" class="form-control" placeholder="Text input" style="width: 100%;" maxlength="140" autocomplete="off">
         </form>
     </div>
 </div>
