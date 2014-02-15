@@ -66,7 +66,7 @@ function draw() {
         drawTank(tanks[i], i);
 }
 
-function draw_minimap(tank) {
+function drawMinimap(tank) {
     minimap.clearRect(0, 0, 200, 200);
     minimap.fillStyle = "#3b5998";
     minimap.fillRect(Math.floor((tank.x-w/2) * 200 / tank.w), Math.floor((tank.y-h/2) * 200 / tank.h), Math.floor(w * 200 / tank.w), Math.floor(h * 200 / tank.h));
