@@ -16,11 +16,12 @@ class GameWebsocketWorkerHandler extends WebsocketWorker
     protected function onTimer() {
         foreach ($this->bullets as $tankId => $bullet) {
             $this->moveObject($this->bullets[$tankId]);
+            $bullet = $this->bullets[$tankId];
             if (!$this->checkBullet($tankId)) {
                 unset($this->bullets[$tankId]);
             }
+            $this->sendData($bullet);
         }
-        $this->sendData();
     }
 
     protected function onOpen($connectionId) {//вызывается при соединении с новым клиентом
@@ -28,11 +29,18 @@ class GameWebsocketWorkerHandler extends WebsocketWorker
     }
 
     protected function onClose($connectionId) {//вызывается при закрытии соединения клиентом
-        unset($this->tanks[$connectionId]);
-        unset($this->bullets[$connectionId]);
+        if (isset($this->tanks[$connectionId])) {
+            $tank = $this->tanks[$connectionId];
+            unset($this->tanks[$connectionId]);
+            $this->sendData($tank);
+        }
+        if (isset($this->bullets[$connectionId])) {
+            $bullet = $this->bullets[$connectionId];
+            unset($this->bullets[$connectionId]);
+            $this->sendData($bullet);
+        }
         if ($login = array_search($connectionId, $this->logins)) {
             unset($this->logins[$login]);
-            $this->sendData();
         }
     }
 
@@ -81,7 +89,7 @@ class GameWebsocketWorkerHandler extends WebsocketWorker
                     //$this->checkBullet($connectionId);
                 }
 
-                $this->sendData();
+                $this->sendData($this->tanks[$connectionId]);
             } else {
                 //антифлуд:
                 $source = explode(':', stream_socket_get_name($this->getConnectionById($connectionId), true));
@@ -104,8 +112,8 @@ class GameWebsocketWorkerHandler extends WebsocketWorker
                 } else {
                     $this->logins[$match[0]] = $connectionId;
                     $this->sendPacketToClient($connectionId, 'message', 'Система: вы вошли в игру под именем ' . $match[0] . '. Для управления танком воспользуйтесь клавишами: вверх, вниз, вправо, влево или w s a d.');
-                    $this->tanks[$connectionId] = array('name' => $match[0], 'x' => rand(5, $this->w - 5), 'y' => rand(5, $this->h - 5), 'dir' => 'up', 'health' => 0);
-                    $this->sendData();
+                    $this->tanks[$connectionId] = array('name' => $match[0], 'x' => rand($this->tankmodelsize/2, $this->w - $this->tankmodelsize/2), 'y' => rand($this->tankmodelsize/2, $this->h - $this->tankmodelsize/2), 'dir' => 'up', 'health' => 0);
+                    $this->sendData($this->tanks[$connectionId]);
                 }
             } else {
                 $this->sendPacketToClient($connectionId, 'message', 'Система: ошибка при выборе имени. В имени можно использовать английские буквы и цифры. Имя не должно превышать 10 символов.');
@@ -136,8 +144,12 @@ class GameWebsocketWorkerHandler extends WebsocketWorker
         return json_encode(array('cmd' => $cmd, 'data' => $data));
     }
 
-    protected function sendData() {
+    protected function sendData($target) {
         foreach ($this->tanks as $connectionId => $tank) {
+            if (abs($target['x'] - $tank['x']) > $this->radius + $this->tankmodelsize/2 || abs($target['y'] - $tank['y']) > $this->radius + $this->tankmodelsize/2) {
+                continue;
+            }
+
             $current = $this->tanks[$connectionId];
             //$current['x'] = 50;
             //$current['y'] = 50;
