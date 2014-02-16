@@ -15,10 +15,11 @@ $config = array(
     'worker' => array(
         'socket' => 'tcp://127.0.0.1:8002',
         'class' => 'GameWebsocketWorkerHandler',
+        'timer' => 0.05
     ),
 );
 
-require_once('../../../WebsocketGeneric.php');
+require_once('../../../WebsocketGenericLibevent.php');//Libevent
 require_once('../../../WebsocketMaster.php');
 require_once('../../../WebsocketWorker.php');
 require_once('../../../WebsocketServer.php');

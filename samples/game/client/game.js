@@ -27,41 +27,15 @@ function applyKeys(tank) {
     }
 }
 
-function drawTank(tank, i) {
-    if (!i) {
-        context.fillStyle = "#3b5998";
-    } else /*if (!tank.health) {
-        context.fillStyle = "#008000";
-    } else if (tank.health > 0) {
-        context.fillStyle = "#000000";
-    } else if (tank.health < 0)*/ {
-        context.fillStyle = "#00bbbb";
-    }
-
-    context.drawImage(tankmodel[tank.dir + (((tank.dir == 'left' || tank.dir == 'right') && tank.x % 2 || (tank.dir == 'up' || tank.dir == 'down') && tank.y % 2) ? '' : '1')], (i ? tank.x : w/2 - 1) * cellsize, (i ? tank.y : h/2 - 1) * cellsize, 4 * cellsize, 4 * cellsize);
-
-    context.fillText(tank.name, (i ? tank.x : w/2) * cellsize, ((i ? tank.y : h/2) + 4) * cellsize);
-
-    if (tank.health) {
-        context.fillStyle = "#000";
-        context.font = "10px sans-serif";
-        context.textBaseline = "bottom";
-        context.fillText(tank.health, (i ? tank.x : w/2) * cellsize, ((i ? tank.y : h/2) - 2) * cellsize);
-    }
-
-    /*context.fillStyle = "#a5f5a5";
-    context.fillRect(x, y, health / 3, 5);*/
-}
-
-function draw() {
+function drawTanks(tanks) {
     context.clearRect(0, 0, w * cellsize, h * cellsize);
     context.fillStyle = "#000000";
     if (tanks[0].x < w/2) {
-        context.fillRect(0, 0, (w/2 - tanks[0].x - 1) * cellsize, h * cellsize);
+        context.fillRect(0, 0, (w/2 - tanks[0].x) * cellsize, h * cellsize);
     }
 
     if (tanks[0].y < h/2) {
-        context.fillRect(0, 0, w * cellsize, (h/2 - tanks[0].y - 1) * cellsize);
+        context.fillRect(0, 0, w * cellsize, (h/2 - tanks[0].y) * cellsize);
     }
 
     if (tanks[0].w - tanks[0].x < w/2) {
@@ -76,10 +50,42 @@ function draw() {
         drawTank(tanks[i], i);
 }
 
+function drawTank(tank, i) {
+    if (!i) {
+        context.fillStyle = "#3b5998";
+    } else /*if (!tank.health) {
+     context.fillStyle = "#008000";
+     } else if (tank.health > 0) {
+     context.fillStyle = "#000000";
+     } else if (tank.health < 0)*/ {
+        context.fillStyle = "#00bbbb";
+    }
+
+    context.drawImage(tankModel[tank.dir + (((tank.dir == 'left' || tank.dir == 'right') && tank.x % 2 || (tank.dir == 'up' || tank.dir == 'down') && tank.y % 2) ? '' : '1')], (i ? tank.x : w/2) * cellsize - cellsize*2, (i ? tank.y : h/2 - 0) * cellsize - cellsize*2, 4 * cellsize, 4 * cellsize);
+
+    context.fillText(tank.name, (i ? tank.x : w/2) * cellsize, ((i ? tank.y : h/2) + 4) * cellsize);
+
+    if (tank.health) {
+        context.fillStyle = "#000";
+        context.font = "10px sans-serif";
+        context.textBaseline = "bottom";
+        context.fillText(tank.health, (i ? tank.x : w/2) * cellsize, ((i ? tank.y : h/2) - 2) * cellsize);
+    }
+
+    /*context.fillStyle = "#a5f5a5";
+     context.fillRect(x, y, health / 3, 5);*/
+}
+
 function drawMinimap(tank) {
     minimap.clearRect(0, 0, 200, 200);
     minimap.fillStyle = "#3b5998";
     minimap.fillRect(Math.floor((tank.x-w/2) * 200 / tank.w), Math.floor((tank.y-h/2) * 200 / tank.h), Math.floor(w * 200 / tank.w), Math.floor(h * 200 / tank.h));
+}
+
+function drawBullets(bullets) {
+    for (i = 0; i < bullets.length; ++i) {
+        context.drawImage(bulletModel[bullets[i].dir], bullets[i].x * cellsize - cellsize/2, bullets[i].y * cellsize - cellsize/2, cellsize, cellsize);
+    }
 }
 
 function keyDown(e) {
@@ -105,7 +111,7 @@ function keyDown(e) {
             keys.right = true;
             break;
         // fire:
-        case 8:
+        case 32:
             keys.fire = true;
             break;
     }
@@ -134,18 +140,18 @@ function keyUp(e) {
             keys.right = false;
             break;
         // fire:
-        case 8:
+        case 32:
             keys.fire = false;
             break;
     }
 }
 
 $(function () {
-    var chat = $("#chat"), canvasdiv = $("#canvasdiv"), canvas = $("#canvas");
+    var chat = $("#chat"), canvasdiv = $("#canvasdiv"), canvas = $("#canvas"), divinput = $("#divinput");
 
     function resize() {
         $("#rightdiv").css('height', $(window).height() - 70);
-        chat.css('height', $(window).height() - $("#divinput").height() - $("#minimap").height() - 70);
+        chat.css('height', $(window).height() - divinput.height() - $("#minimap").height() - 70);
         canvasdiv.css('width', $(window).width() - 350);
         canvasdiv.css('height', $(window).height() - 70);
         cellsize = Math.min(Math.floor(canvasdiv.height() / h), Math.floor(canvasdiv.width() / w));
@@ -167,7 +173,16 @@ $(function () {
 
     minimap = $("#minimap")[0].getContext('2d');
 
-    tankmodel = {
+
+    for (y in keys) {
+        for (i=1;i<=2;i++) {
+            $('<img src="images/textures/tank1-' + y + '-s' + i +'.png" />').attr("id", "tank1" + y + (i==1 ? '' : '1')).appendTo(divinput);
+        }
+
+        $('<img src="images/textures/bullet-' + y +'.png" />').attr("id", "bullet" + y).appendTo(divinput);
+    }
+
+    tankModel = {
         up: document.getElementById('tank1up'),
         down: document.getElementById('tank1down'),
         left: document.getElementById('tank1left'),
@@ -176,6 +191,13 @@ $(function () {
         down1: document.getElementById('tank1down1'),
         left1: document.getElementById('tank1left1'),
         right1: document.getElementById('tank1right1')
+    }
+
+    bulletModel = {
+        up: document.getElementById('bulletup'),
+        down: document.getElementById('bulletdown'),
+        left: document.getElementById('bulletleft'),
+        right: document.getElementById('bulletright')
     }
 
     window.addEventListener("keydown", keyDown, false);
@@ -200,15 +222,14 @@ $(function () {
             if (pack.cmd == 'message') {
                 chat.append("<p>"+pack.data+"</p>");
                 chat.scrollTop($('#chat')[0].scrollHeight);
-            } else if (pack.cmd == 'tanks') {
-                tanks = pack.data;
+            } else if (pack.cmd == 'data') {
                 //chat.append("<p>" + tanks[0].x + "," + tanks[0].y + "</p>");
                 chat.scrollTop($('#chat')[0].scrollHeight);
                 //console.log(tanks[0].x, tanks[0].y, tanks[0].w, tanks[0].h)
-                drawMinimap(tanks[0]);
-                canvas.css('backgroundPosition', -tanks[0].x * cellsize + 'px -' + tanks[0].y * cellsize + 'px');
-
-                draw();
+                drawTanks(pack.data.tanks);
+                drawBullets(pack.data.bullets);
+                drawMinimap(pack.data.tanks[0]);
+                canvas.css('backgroundPosition', -pack.data.tanks[0].x * cellsize + 'px -' + pack.data.tanks[0].y * cellsize + 'px');
 
                 if (paused) {
                     paused = false;
