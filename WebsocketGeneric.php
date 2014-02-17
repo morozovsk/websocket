@@ -14,7 +14,6 @@ abstract class WebsocketGeneric
     public $timer = null;
 
     public function start() {
-
         if ($this->timer) {
             $timer = $this->_createTimer();
         }
