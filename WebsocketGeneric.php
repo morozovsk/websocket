@@ -12,22 +12,12 @@ abstract class WebsocketGeneric
     protected $_read = array();//буферы чтения
     protected $_write = array();//буферы заииси
     public $timer = null;
-    private $_time = null;
-
-    /*public function timer() {
-        if ($this->timer && (microtime(true) >= $this->_time + $this->timer)) {
-            $this->_time = microtime(true);
-            $this->onTimer();
-        }
-    }*/
 
     public function start() {
-        $this->_time = microtime(true);
 
-        /*if ($this->timer) {
-            declare(ticks=1);
-            register_tick_function(array($this, 'timer'), true);
-        }*/
+        if ($this->timer) {
+            $timer = $this->_createTimer();
+        }
 
         while (true) {
             //подготавливаем массив всех сокетов, которые нужно обработать
@@ -35,6 +25,10 @@ abstract class WebsocketGeneric
 
             if ($this->_server) {
                 $read[] = $this->_server;
+            }
+
+            if ($this->timer) {
+                $read[] = $timer;
             }
 
             if (!$read) {
@@ -53,10 +47,11 @@ abstract class WebsocketGeneric
 
             $except = $read;
 
-            stream_select($read, $write, $except, $this->timer ? $this->timer - microtime(true) + $this->_time : null);//обновляем массив сокетов, которые можно обработать
+            stream_select($read, $write, $except, null);//обновляем массив сокетов, которые можно обработать
 
-            if ($this->timer && (microtime(true) >= $this->_time + $this->timer)) {
-                $this->_time = microtime(true);
+            if ($this->timer && in_array($timer, $read)) {
+                unset($read[array_search($timer, $read)]);
+                fread($timer, self::SOCKET_BUFFER_SIZE);
                 $this->onTimer();
             }
 
@@ -175,6 +170,28 @@ abstract class WebsocketGeneric
 
     protected function getIdByConnection($connection) {
         return intval($connection);
+    }
+
+    protected function _createTimer() {
+        $pair = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
+
+        $pid = pcntl_fork();//создаём форк
+
+        if ($pid == -1) {
+            die("error: pcntl_fork\r\n");
+        } elseif ($pid) { //родитель
+            fclose($pair[0]);
+            return $pair[1];//один из пары будет в родителе
+        } else { //дочерний процесс
+            fclose($pair[1]);
+            $parent = $pair[0];//второй в дочернем процессе
+
+            while (true) {
+                fwrite($parent, '1');
+
+                usleep($this->timer * 1000000);
+            }
+        }
     }
 
     abstract protected function _onMessage($connectionId);
