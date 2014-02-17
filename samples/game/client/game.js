@@ -51,17 +51,23 @@ function drawTanks(tanks) {
 }
 
 function drawTank(tank, i) {
-    if (!i) {
+    /*if (!i) {
         context.fillStyle = "#3b5998";
-    } else /*if (!tank.health) {
-     context.fillStyle = "#008000";
-     } else if (tank.health > 0) {
-     context.fillStyle = "#000000";
-     } else if (tank.health < 0)*/ {
+    } else if (!tank.health) {
+        context.fillStyle = "#008000";
+    } else if (tank.health > 0) {
+        context.fillStyle = "#000000";
+    } else if (tank.health < 0) {
         context.fillStyle = "#00bbbb";
-    }
+    }*/
 
-    context.drawImage(tankModel[tank.dir + (((tank.dir == 'left' || tank.dir == 'right') && tank.x % 2 || (tank.dir == 'up' || tank.dir == 'down') && tank.y % 2) ? '' : '1')], (i ? tank.x : w/2) * cellsize - cellsize*2, (i ? tank.y : h/2 - 0) * cellsize - cellsize*2, 4 * cellsize, 4 * cellsize);
+    context.fillStyle = "#3b5998";
+
+    move = ((tank.dir == 'left' || tank.dir == 'right') && tank.x % 2 || (tank.dir == 'up' || tank.dir == 'down') && tank.y % 2);
+
+    model =  !i ? (move ? tank1ModelMove : tank1Model) : (move ? tank2ModelMove : tank2Model);
+
+    context.drawImage(model[tank.dir], (i ? tank.x : w/2) * cellsize - cellsize*2, (i ? tank.y : h/2 - 0) * cellsize - cellsize*2, 4 * cellsize, 4 * cellsize);
 
     context.fillText(tank.name, (i ? tank.x : w/2) * cellsize, ((i ? tank.y : h/2) + 4) * cellsize);
 
@@ -176,28 +182,22 @@ $(function () {
 
     for (y in keys) {
         for (i=1;i<=2;i++) {
-            $('<img src="images/textures/tank1-' + y + '-s' + i +'.png" />').attr("id", "tank1" + y + (i==1 ? '' : '1')).appendTo(divinput);
+            for (z=1;z<=2;z++) {
+                $('<img src="images/textures/tank' + z + '-' + y + '-s' + i +'.png" />').attr("id", "tank" + z + y + (i==1 ? '' : 'move')).appendTo(divinput);
+            }
         }
 
         $('<img src="images/textures/bullet-' + y +'.png" />').attr("id", "bullet" + y).appendTo(divinput);
     }
 
-    tankModel = {
-        up: document.getElementById('tank1up'),
-        down: document.getElementById('tank1down'),
-        left: document.getElementById('tank1left'),
-        right: document.getElementById('tank1right'),
-        up1: document.getElementById('tank1up1'),
-        down1: document.getElementById('tank1down1'),
-        left1: document.getElementById('tank1left1'),
-        right1: document.getElementById('tank1right1')
-    }
 
-    bulletModel = {
-        up: document.getElementById('bulletup'),
-        down: document.getElementById('bulletdown'),
-        left: document.getElementById('bulletleft'),
-        right: document.getElementById('bulletright')
+    tank1Model = {}; tank2Model = {}; tank1ModelMove = {}; tank2ModelMove = {}; bulletModel = {};
+    for (y in keys) {
+        tank2Model[y] = document.getElementById('tank1' + y);
+        tank2ModelMove[y] = document.getElementById('tank1' + y + 'move');
+        tank1Model[y] = document.getElementById('tank2' + y);
+        tank1ModelMove[y] = document.getElementById('tank2' + y + 'move');
+        bulletModel[y] = document.getElementById('bullet' + y);
     }
 
     window.addEventListener("keydown", keyDown, false);
