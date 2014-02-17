@@ -14,8 +14,21 @@ abstract class WebsocketGeneric
     public $timer = null;
     private $_time = null;
 
+    /*public function timer() {
+        if ($this->timer && (microtime(true) >= $this->_time + $this->timer)) {
+            $this->_time = microtime(true);
+            $this->onTimer();
+        }
+    }*/
+
     public function start() {
         $this->_time = microtime(true);
+
+        /*if ($this->timer) {
+            declare(ticks=1);
+            register_tick_function(array($this, 'timer'), true);
+        }*/
+
         while (true) {
             //подготавливаем массив всех сокетов, которые нужно обработать
             $read = array_merge($this->_services, $this->clients);

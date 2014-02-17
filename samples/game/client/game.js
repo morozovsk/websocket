@@ -223,7 +223,7 @@ $(function () {
                 chat.append("<p>"+pack.data+"</p>");
                 chat.scrollTop($('#chat')[0].scrollHeight);
             } else if (pack.cmd == 'data') {
-                //chat.append("<p>" + tanks[0].x + "," + tanks[0].y + "</p>");
+                //chat.append("<p>" + JSON.stringify(evt.data) + "</p>");
                 chat.scrollTop($('#chat')[0].scrollHeight);
                 //console.log(tanks[0].x, tanks[0].y, tanks[0].w, tanks[0].h)
                 drawTanks(pack.data.tanks);

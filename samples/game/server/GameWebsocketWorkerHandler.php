@@ -14,30 +14,43 @@ class GameWebsocketWorkerHandler extends WebsocketWorker
     protected $radius = 26;
 
     protected function onTimer() {
-        foreach ($this->bullets as $tankId => $bullet) {
-            $this->moveObject($this->bullets[$tankId]);
-            $bullet = $this->bullets[$tankId];
+        foreach ($this->tanks as $tankId => &$tank) {
+            if (!empty($tank['move'])) {
+                unset($tank['move']);
+                $this->moveObject($tank, $tank['dir'], 1);
+                $this->checkTank($tank);
+            }
+
+            if (!empty($tank['fire'])) {
+                unset($tank['fire']);
+                $this->bullets[$tankId] = $tank;
+            }
+        }
+
+        foreach ($this->bullets as $tankId => &$bullet) {
+            $this->moveObject($bullet);
             if (!$this->checkBullet($tankId)) {
                 unset($this->bullets[$tankId]);
             }
-            $this->sendData($bullet);
         }
+
+        $this->sendData();
     }
 
     protected function onOpen($connectionId) {//вызывается при соединении с новым клиентом
-        
+        /*static $startTimer = 0;
+        if (!$startTimer) {
+            $startTimer = 1;
+            $this->sendToMaster('qwe');
+        }*/
     }
 
     protected function onClose($connectionId) {//вызывается при закрытии соединения клиентом
         if (isset($this->tanks[$connectionId])) {
-            $tank = $this->tanks[$connectionId];
             unset($this->tanks[$connectionId]);
-            $this->sendData($tank);
         }
         if (isset($this->bullets[$connectionId])) {
-            $bullet = $this->bullets[$connectionId];
             unset($this->bullets[$connectionId]);
-            $this->sendData($bullet);
         }
         if ($login = array_search($connectionId, $this->logins)) {
             unset($this->logins[$login]);
@@ -51,45 +64,17 @@ class GameWebsocketWorkerHandler extends WebsocketWorker
 
         if ($login = array_search($connectionId, $this->logins)) {
             if (substr($data['payload'], 0, 1) == '{' && $tank = @json_decode($data['payload'], true)) {
-                //echo $data['payload'] . "\n";
+                //var_export($tank) . "\n";
                 //$this->tanks[$connectionId] = $tank;
                 //var_dump($this->tanks[$connectionId]);
                 if (isset($tank['dir']) && empty($tank['fire'])) {
                     $this->tanks[$connectionId]['dir'] = $tank['dir'];
-
-                    $this->moveObject($this->tanks[$connectionId], $this->tanks[$connectionId]['dir'], 1);
-
-                    if ($this->tanks[$connectionId]['x'] < $this->tankmodelsize/2) {
-                        $this->tanks[$connectionId]['x'] = $this->tankmodelsize/2;
-                    }
-                    if ($this->tanks[$connectionId]['y'] < $this->tankmodelsize/2) {
-                        $this->tanks[$connectionId]['y'] = $this->tankmodelsize/2;
-                    }
-                    if ($this->tanks[$connectionId]['x'] > $this->w - $this->tankmodelsize/2) {
-                        $this->tanks[$connectionId]['x'] = $this->w - $this->tankmodelsize/2;
-                    }
-                    if ($this->tanks[$connectionId]['y'] > $this->h - $this->tankmodelsize/2) {
-                        $this->tanks[$connectionId]['y'] = $this->h - $this->tankmodelsize/2;
-                    }
-
-                    foreach ($this->tanks as $tankId => $tank) {
-                        if ($tankId != $connectionId && $this->tanks[$connectionId]['dir'] == $tank['dir'] &&
-                            abs($this->tanks[$connectionId]['x'] - $tank['x']) <= 1
-                            && abs($this->tanks[$connectionId]['y'] - $tank['y']) <= 1) {
-                            $this->tanks[$connectionId]['health']++;
-                            $this->tanks[$tankId]['health']--;
-                            break;
-                        }
-                    }
+                    $this->tanks[$connectionId]['move'] = true;
                 }
 
-                if (isset($tank['fire']) && !isset($this->bullets[$connectionId])) {
-                    $this->bullets[$connectionId] = $this->tanks[$connectionId];
-                    $this->moveObject($this->bullets[$connectionId], $this->bullets[$connectionId]['dir'], 1);
-                    //$this->checkBullet($connectionId);
+                if (!empty($tank['fire']) && !isset($this->bullets[$connectionId])) {
+                    $this->tanks[$connectionId]['fire'] = true;
                 }
-
-                $this->sendData($this->tanks[$connectionId]);
             } else {
                 //антифлуд:
                 $source = explode(':', stream_socket_get_name($this->getConnectionById($connectionId), true));
@@ -104,7 +89,6 @@ class GameWebsocketWorkerHandler extends WebsocketWorker
                 $message = $login . ': ' . strip_tags($data['payload']);
                 $this->sendPacketToClients('message', $message);
             }
-
         } else {
             if (preg_match('/^[a-zA-Z0-9]{1,10}$/', $data['payload'], $match)) {
                 if (isset($this->logins[$match[0]])) {
@@ -113,7 +97,6 @@ class GameWebsocketWorkerHandler extends WebsocketWorker
                     $this->logins[$match[0]] = $connectionId;
                     $this->sendPacketToClient($connectionId, 'message', 'Система: вы вошли в игру под именем ' . $match[0] . '. Для управления танком воспользуйтесь клавишами: вверх, вниз, вправо, влево или w s a d.');
                     $this->tanks[$connectionId] = array('name' => $match[0], 'x' => rand($this->tankmodelsize/2, $this->w - $this->tankmodelsize/2), 'y' => rand($this->tankmodelsize/2, $this->h - $this->tankmodelsize/2), 'dir' => 'up', 'health' => 0);
-                    $this->sendData($this->tanks[$connectionId]);
                 }
             } else {
                 $this->sendPacketToClient($connectionId, 'message', 'Система: ошибка при выборе имени. В имени можно использовать английские буквы и цифры. Имя не должно превышать 10 символов.');
@@ -122,7 +105,7 @@ class GameWebsocketWorkerHandler extends WebsocketWorker
     }
 
     protected function onMasterMessage($data) {//вызывается при получении сообщения от мастера
-
+        //$this->onTimer();
     }
 
     protected function sendPacketToMaster($cmd, $data) {//отправляем сообщение на мастер, чтобы он разослал его на все воркеры
@@ -144,9 +127,9 @@ class GameWebsocketWorkerHandler extends WebsocketWorker
         return json_encode(array('cmd' => $cmd, 'data' => $data));
     }
 
-    protected function sendData($target) {
+    protected function sendData($target = null) {
         foreach ($this->tanks as $connectionId => $tank) {
-            if (abs($target['x'] - $tank['x']) > $this->radius + $this->tankmodelsize/2 || abs($target['y'] - $tank['y']) > $this->radius + $this->tankmodelsize/2) {
+            if ($target && (abs($target['x'] - $tank['x']) > $this->radius + $this->tankmodelsize/2 || abs($target['y'] - $tank['y']) > $this->radius + $this->tankmodelsize/2)) {
                 continue;
             }
 
@@ -167,7 +150,7 @@ class GameWebsocketWorkerHandler extends WebsocketWorker
             }
 
             $bullets = array();
-            foreach ($this->bullets as $tankId => $bullet) {
+            foreach ($this->bullets as $bullet) {
                 $bullet['x'] = $bullet['x'] - $current['x'] + $this->radius;
                 $bullet['y'] = $bullet['y'] - $current['y'] + $this->radius;
                 if ($bullet['x'] >= 0 && $bullet['x'] <= $this->radius * 2 && $bullet['y'] >= 0 && $bullet['y'] <= $this->radius * 2) {
@@ -214,5 +197,30 @@ class GameWebsocketWorkerHandler extends WebsocketWorker
         }
 
         return true;
+    }
+
+    protected function checkTank(&$tank) {
+        if ($tank['x'] < $this->tankmodelsize/2) {
+            $tank['x'] = $this->tankmodelsize/2;
+        }
+        if ($tank['y'] < $this->tankmodelsize/2) {
+            $tank['y'] = $this->tankmodelsize/2;
+        }
+        if ($tank['x'] > $this->w - $this->tankmodelsize/2) {
+            $tank['x'] = $this->w - $this->tankmodelsize/2;
+        }
+        if ($tank['y'] > $this->h - $this->tankmodelsize/2) {
+            $tank['y'] = $this->h - $this->tankmodelsize/2;
+        }
+
+        foreach ($this->tanks as &$target) {
+            if ($tank != $target && $tank['dir'] == $target['dir'] &&
+                abs($tank['x'] - $target['x']) <= 1
+                && abs($tank['y'] - $target['y']) <= 1) {
+                $tank['health']++;
+                $target['health']--;
+                break;
+            }
+        }
     }
 }
