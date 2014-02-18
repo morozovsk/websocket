@@ -86,7 +86,7 @@ abstract class WebsocketWorker extends WebsocketGeneric
         return true;
     }
 
-    protected function _encode($payload, $type = 'text', $masked = false)
+    protected function _encode($payload, $type = 'text')
     {
         $frameHead = array();
         $payloadLength = strlen($payload);
@@ -113,43 +113,18 @@ abstract class WebsocketWorker extends WebsocketGeneric
                 break;
         }
 
-        // set mask and payload length (using 1, 3 or 9 bytes)
         if ($payloadLength > 65535) {
-            $payloadLengthBin = str_split(sprintf('%064b', $payloadLength), 8);
-            $frameHead[1] = $masked ? 255 : 127;
-            for ($i = 0; $i < 8; $i++) {
-                $frameHead[$i + 2] = bindec($payloadLengthBin[$i]);
-            }
+            $ext = pack('NN', 0, $payloadLength);
+            $secondByte = 127;
         } elseif ($payloadLength > 125) {
-            $payloadLengthBin = str_split(sprintf('%016b', $payloadLength), 8);
-            $frameHead[1] = $masked ? 254 : 126;
-            $frameHead[2] = bindec($payloadLengthBin[0]);
-            $frameHead[3] = bindec($payloadLengthBin[1]);
+            $ext = pack('n', $payloadLength);
+            $secondByte = 126;
         } else {
-            $frameHead[1] = $masked ? $payloadLength + 128 : $payloadLength;
+            $ext = '';
+            $secondByte = $payloadLength;
         }
 
-        // convert frame-head to string:
-        foreach (array_keys($frameHead) as $i) {
-            $frameHead[$i] = chr($frameHead[$i]);
-        }
-        if ($masked) {
-            // generate a random mask:
-            $mask = array();
-            for ($i = 0; $i < 4; $i++) {
-                $mask[$i] = chr(rand(0, 255));
-            }
-
-            $frameHead = array_merge($frameHead, $mask);
-        }
-        $frame = implode('', $frameHead);
-
-        // append payload to frame:
-        for ($i = 0; $i < $payloadLength; $i++) {
-            $frame .= $masked ? $payload[$i] ^ $mask[$i % 4] : $payload[$i];
-        }
-
-        return $frame;
+        return $data  = chr($frameHead[0]) . chr($secondByte) . $ext . $payload;
     }
 
     protected function _decode($connectionId)
