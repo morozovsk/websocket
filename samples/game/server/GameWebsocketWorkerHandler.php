@@ -8,12 +8,18 @@ class GameWebsocketWorkerHandler extends WebsocketWorker
     protected $logins = array();
     protected $ips = array();
 
-    protected $h = 100;
-    protected $w = 100;
-    protected $tankmodelsize = 4;
     protected $radius = 26;
+    protected $h = 52;
+    protected $w = 52;
+    protected $tankmodelsize = 4;
 
     protected function onTimer() {
+        static $i = 1;
+        $tmp = 2 * $this->radius + count($this->tanks);
+        if ($this->w < $tmp) {
+            $this->w = $this->h = $tmp;
+        }
+
         foreach ($this->tanks as $tankId => &$tank) {
             if (!empty($tank['move'])) {
                 unset($tank['move']);
@@ -23,14 +29,14 @@ class GameWebsocketWorkerHandler extends WebsocketWorker
 
             if (!empty($tank['fire'])) {
                 unset($tank['fire']);
-                $this->bullets[$tankId] = $tank;
+                $this->bullets[] = array('dir' => $tank['dir'], 'x' => $tank['x'], 'y' => $tank['y'], 'tankId' => $tankId);
             }
         }
 
-        foreach ($this->bullets as $tankId => &$bullet) {
+        foreach ($this->bullets as $bulletId => &$bullet) {
             $this->moveObject($bullet);
-            if (!$this->checkBullet($tankId)) {
-                unset($this->bullets[$tankId]);
+            if (!$this->checkBullet($bulletId)) {
+                unset($this->bullets[$bulletId]);
             }
         }
 
@@ -49,9 +55,7 @@ class GameWebsocketWorkerHandler extends WebsocketWorker
         if (isset($this->tanks[$connectionId])) {
             unset($this->tanks[$connectionId]);
         }
-        if (isset($this->bullets[$connectionId])) {
-            unset($this->bullets[$connectionId]);
-        }
+
         if ($login = array_search($connectionId, $this->logins)) {
             unset($this->logins[$login]);
         }
@@ -67,12 +71,12 @@ class GameWebsocketWorkerHandler extends WebsocketWorker
                 //var_export($tank) . "\n";
                 //$this->tanks[$connectionId] = $tank;
                 //var_dump($this->tanks[$connectionId]);
-                if (isset($tank['dir']) && empty($tank['fire'])) {
+                if (!empty($tank['move'])) {
                     $this->tanks[$connectionId]['dir'] = $tank['dir'];
                     $this->tanks[$connectionId]['move'] = true;
                 }
 
-                if (!empty($tank['fire']) && !isset($this->bullets[$connectionId])) {
+                if (!empty($tank['fire'])) {
                     $this->tanks[$connectionId]['fire'] = true;
                 }
             } else {
@@ -189,8 +193,8 @@ class GameWebsocketWorkerHandler extends WebsocketWorker
         }
 
         foreach ($this->tanks as $tankId => $tank) {
-            if ($bulletId != $tankId && abs($this->bullets[$bulletId]['x'] - $tank['x']) <= 1 && abs($this->bullets[$bulletId]['y'] - $tank['y']) <= 1) {
-                $this->tanks[$bulletId]['health']++;
+            if ($this->bullets[$bulletId]['tankId'] != $tankId && abs($this->bullets[$bulletId]['x'] - $tank['x']) <= 1 && abs($this->bullets[$bulletId]['y'] - $tank['y']) <= 1) {
+                $this->tanks[$this->bullets[$bulletId]['tankId']]['health']++;
                 $this->tanks[$tankId]['health']--;
                 return false;
             }

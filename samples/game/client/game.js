@@ -20,8 +20,9 @@ function applyKeys(tank) {
         tank.dir = 'right';
 
     tank.fire = keys.fire;
+    tank.move = keys.up || keys.down || keys.left || keys.right;
 
-    if (keys.up || keys.down || keys.left || keys.right || keys.fire) {
+    if (tank.move || tank.fire) {
         ws.send(JSON.stringify(tank));
         paused = true;
     }
