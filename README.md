@@ -1,20 +1,20 @@
-Простой сервер вебсокетов на php.
+Simple websocket server on php.
 Запуск происходит из консоли.
 
-###Возможности:
-* работает с использованием socket_select и не требует дополнительно устанавливать libevent.
-* запуск несколько процессов, обслуживающих один порт (один мастер и несколько воркеров).
-* интеграция с вашим фреймворком.
-* поддержка буферов для чтения и записи
+###Features:
+* server works with socket_select and does not require libevent.
+* you can run multiple processes on single port (one master and several workers).
+* integration with your framework.
 
-В папке samples лежат примеры:
-* chat - простой чат на вебсокетах (live demo: http://sharoid.ru/chat.html )
-* yii - тот же чат, но с дополнительной возможностью отправлять свои сообщения из скриптов со страниц сайта или крона, используя Yii::app()->websocket->send('всем привет');
+Examples directory:
+* chat - simple chat (live demo: http://sharoid.ru/chat.html )
+* yii - sample of use yii with websockets: Yii::app()->websocket->send('Hello world');
 
-Использование примеров в консоли:
-* запуск: php index.php start или nohup php index.php start &
-* остановка: php index.php stop
+Run from console:
+* start: "php index.php start" or "nohup php index.php start &"
+* stop: "php index.php stop"
+* restart: "php index.php restart" or "nohup php index.php restart &"
 
-Описание здесь:
+About:
 * http://habrahabr.ru/company/ifree/blog/209864/
 * http://habrahabr.ru/company/ifree/blog/210228/
