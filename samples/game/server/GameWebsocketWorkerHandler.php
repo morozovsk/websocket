@@ -14,7 +14,6 @@ class GameWebsocketWorkerHandler extends WebsocketWorker
     protected $tankmodelsize = 4;
 
     protected function onTimer() {
-        static $i = 1;
         $tmp = 2 * $this->radius + count($this->tanks);
         if ($this->w < $tmp) {
             $this->w = $this->h = $tmp;
@@ -29,12 +28,12 @@ class GameWebsocketWorkerHandler extends WebsocketWorker
 
             if (!empty($tank['fire'])) {
                 unset($tank['fire']);
-                $this->bullets[] = array('dir' => $tank['dir'], 'x' => $tank['x'], 'y' => $tank['y'], 'tankId' => $tankId);
+                $this->bullets[$tankId] = array('dir' => $tank['dir'], 'x' => $tank['x'], 'y' => $tank['y'], 'tankId' => $tankId);
             }
         }
 
         foreach ($this->bullets as $bulletId => &$bullet) {
-            $this->moveObject($bullet);
+            $this->moveObject($bullet, null, 2);
             if (!$this->checkBullet($bulletId)) {
                 unset($this->bullets[$bulletId]);
             }
@@ -76,7 +75,7 @@ class GameWebsocketWorkerHandler extends WebsocketWorker
                     $this->tanks[$connectionId]['move'] = true;
                 }
 
-                if (!empty($tank['fire'])) {
+                if (!empty($tank['fire']) && !isset($this->bullets[$connectionId])) {
                     $this->tanks[$connectionId]['fire'] = true;
                 }
             } else {

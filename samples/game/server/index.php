@@ -15,17 +15,13 @@ $config = array(
     'worker' => array(
         'socket' => 'tcp://127.0.0.1:8002',
         'class' => 'GameWebsocketWorkerHandler',
-        'timer' => 0.05
+        'timer' => 0.1
     ),
 );
 
-require_once('../../../WebsocketGenericLibevent.php');//Libevent
-require_once('../../../WebsocketMaster.php');
-require_once('../../../WebsocketWorker.php');
-require_once('../../../WebsocketServer.php');
+set_include_path(get_include_path() . PATH_SEPARATOR . realpath('../../../'));
 
-require_once('GameWebsocketWorkerHandler.php');
-require_once('GameWebsocketMasterHandler.php');
+spl_autoload_register(function ($class) { include $class . '.php'; });
 
 $WebsocketServer = new WebsocketServer($config);
 call_user_func(array($WebsocketServer, $argv[1]));

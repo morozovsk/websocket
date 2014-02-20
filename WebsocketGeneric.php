@@ -20,7 +20,7 @@ abstract class WebsocketGeneric
 
         while (true) {
             //подготавливаем массив всех сокетов, которые нужно обработать
-            $read = array_merge($this->_services, $this->clients);
+            $read = $this->_services + $this->clients;
 
             if ($this->_server) {
                 $read[] = $this->_server;
@@ -54,46 +54,35 @@ abstract class WebsocketGeneric
                 $this->onTimer();
             }
 
-            if ($this->_server && in_array($this->_server, $read)) { //на серверный сокет пришёл запрос от нового клиента
-                if ((count($this->clients) < self::MAX_SOCKETS) && ($client = @stream_socket_accept($this->_server, 0))) {
-                    stream_set_blocking($client, 0);
-                    $clientId = $this->getIdByConnection($client);
-                    $this->clients[$clientId] = $client;
-                    $this->_onOpen($clientId);
-                }
-
-                //удаляем сервеный сокет из массива, чтобы не обработать его в этом цикле ещё раз
-                unset($read[array_search($this->_server, $read)]);
-            }
-
-            if ($services = array_intersect($this->_services, $read)) {
-                foreach ($services as $service) {
-                    //удаляем сервис из массива, чтобы не обработать его в этом цикле ещё раз
-                    unset($read[array_search($service, $read)]);
-
-                    $connectionId = $this->getIdByConnection($service);
-
-                    if (!$this->_read($connectionId)) { //соединение было закрыто или превышен размер буфера
-                        $this->close($connectionId);
-                        continue;
-                    }
-
-                    while ($data = $this->_readFromBuffer($connectionId)) {
-                        $this->_onService($connectionId, $data);//вызываем пользовательский сценарий
-                    }
-                }
-            }
-
             if ($read) {//пришли данные от подключенных клиентов
                 foreach ($read as $client) {
-                    $clientId = $this->getIdByConnection($client);
+                    if ($this->_server == $client) { //на серверный сокет пришёл запрос от нового клиента
+                        if ((count($this->clients) < self::MAX_SOCKETS) && ($client = @stream_socket_accept($this->_server, 0))) {
+                            stream_set_blocking($client, 0);
+                            $clientId = $this->getIdByConnection($client);
+                            $this->clients[$clientId] = $client;
+                            $this->_onOpen($clientId);
+                        }
+                    } else {
+                        $connectionId = $this->getIdByConnection($client);
+                        if (in_array($client, $this->_services)) {
+                            if (is_null($this->_read($connectionId))) { //соединение было закрыто
+                                $this->close($connectionId);
+                                continue;
+                            }
 
-                    if (!$this->_read($clientId)) { //соединение было закрыто или превышен размер буфера
-                        $this->close($clientId);
-                        continue;
+                            while ($data = $this->_readFromBuffer($connectionId)) {
+                                $this->_onService($connectionId, $data); //вызываем пользовательский сценарий
+                            }
+                        } else {
+                            if (!$this->_read($connectionId)) { //соединение было закрыто или превышен размер буфера
+                                $this->close($connectionId);
+                                continue;
+                            }
+
+                            $this->_onMessage($connectionId);
+                        }
                     }
-
-                    $this->_onMessage($clientId);
                 }
             }
 
@@ -156,7 +145,7 @@ abstract class WebsocketGeneric
     protected function _read($connectionId) {
         $data = fread($this->getConnectionById($connectionId), self::SOCKET_BUFFER_SIZE);
 
-        if (!strlen($data)) return false;
+        if (!strlen($data)) return;
 
         @$this->_read[$connectionId] .= $data;//добавляем полученные данные в буфер чтения
         return strlen($this->_read[$connectionId]) < self::MAX_SOCKET_BUFFER_SIZE;
