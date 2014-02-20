@@ -1,5 +1,4 @@
 Simple websocket server on php.
-Запуск происходит из консоли.
 
 ###Features:
 * server works with socket_select and does not require libevent.
