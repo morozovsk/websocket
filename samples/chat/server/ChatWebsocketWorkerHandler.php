@@ -12,7 +12,7 @@ class ChatWebsocketWorkerHandler extends WebsocketWorker
     }
 
     protected function onMessage($connectionId, $data, $type) {//вызывается при получении сообщения от клиента
-        if (!strlen($data) || !mb_check_encoding($data, 'utf-8')) {
+        if (!strlen($data)) {
             return;
         }
 
