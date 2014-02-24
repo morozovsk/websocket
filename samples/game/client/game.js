@@ -66,9 +66,7 @@ function drawTank(tank, i) {
 
     move = ((tank.dir == 'left' || tank.dir == 'right') && tank.x % 2 || (tank.dir == 'up' || tank.dir == 'down') && tank.y % 2);
 
-    model =  !i ? (move ? tank1ModelMove : tank1Model) : (move ? tank2ModelMove : tank2Model);
-
-    context.drawImage(model[tank.dir], (i ? tank.x : w/2) * cellsize - cellsize*2, (i ? tank.y : h/2 - 0) * cellsize - cellsize*2, 4 * cellsize, 4 * cellsize);
+    context.drawImage(Models[ "tank" + (!i ? 1 : 2) + (move ? "m" : "")][tank.dir], (i ? tank.x : w/2) * cellsize - cellsize * 2, (i ? tank.y : h/2 - 0) * cellsize - cellsize * 2, 4 * cellsize, 4 * cellsize);
 
     context.fillText(tank.name, (i ? tank.x : w/2) * cellsize, ((i ? tank.y : h/2) + 4) * cellsize);
 
@@ -91,7 +89,7 @@ function drawMinimap(tank) {
 
 function drawBullets(bullets) {
     for (i = 0; i < bullets.length; ++i) {
-        context.drawImage(bulletModel[bullets[i].dir], bullets[i].x * cellsize - cellsize/2, bullets[i].y * cellsize - cellsize/2, cellsize, cellsize);
+        context.drawImage(Models.bullet[bullets[i].dir], bullets[i].x * cellsize - cellsize/2, bullets[i].y * cellsize - cellsize/2, cellsize, cellsize);
     }
 }
 
@@ -180,25 +178,12 @@ $(function () {
 
     minimap = $("#minimap")[0].getContext('2d');
 
-
-    for (y in keys) {
-        for (i=1;i<=2;i++) {
-            for (z=1;z<=2;z++) {
-                $('<img src="images/textures/tank' + z + '-' + y + '-s' + i +'.png" />').attr("id", "tank" + z + y + (i==1 ? '' : 'move')).appendTo(divinput);
-            }
+    Models = {tank1:{}, tank2:{}, tank1m:{}, tank2m:{}, bullet:{}};
+    for (j in keys) {
+        for (i in Models) {
+            $('<img src="images/' + i + '-' + j + '.png" />').attr("id", i + j).appendTo(divinput);
+            Models[i][j] = document.getElementById(i + j);
         }
-
-        $('<img src="images/textures/bullet-' + y +'.png" />').attr("id", "bullet" + y).appendTo(divinput);
-    }
-
-
-    tank1Model = {}; tank2Model = {}; tank1ModelMove = {}; tank2ModelMove = {}; bulletModel = {};
-    for (y in keys) {
-        tank2Model[y] = document.getElementById('tank1' + y);
-        tank2ModelMove[y] = document.getElementById('tank1' + y + 'move');
-        tank1Model[y] = document.getElementById('tank2' + y);
-        tank1ModelMove[y] = document.getElementById('tank2' + y + 'move');
-        bulletModel[y] = document.getElementById('bullet' + y);
     }
 
     window.addEventListener("keydown", keyDown, false);
