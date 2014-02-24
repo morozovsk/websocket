@@ -21,8 +21,8 @@ class Chat2WebsocketWorkerHandler extends WebsocketWorker
         }
     }
 
-    protected function onMessage($connectionId, $data) {//вызывается при получении сообщения от клиента
-        if (!strlen($data['payload']) || !mb_check_encoding($data['payload'], 'utf-8')) {
+    protected function onMessage($connectionId, $data, $type) {//вызывается при получении сообщения от клиента
+        if (!strlen($data) || !mb_check_encoding($data, 'utf-8')) {
             return;
         }
 
@@ -37,11 +37,11 @@ class Chat2WebsocketWorkerHandler extends WebsocketWorker
         }
 
         if ($login = array_search($connectionId, $this->logins)) {
-            $message = $login . ': ' . strip_tags($data['payload']);
+            $message = $login . ': ' . strip_tags($data);
             $this->sendPacketToMaster('message', $message);
             $this->sendPacketToClients('message', $message);
         } else {
-            if (preg_match('/^[a-zA-Z0-9]{1,10}$/', $data['payload'], $match)) {
+            if (preg_match('/^[a-zA-Z0-9]{1,10}$/', $data, $match)) {
                 if (isset($this->logins[$match[0]])) {
                     $this->sendPacketToClient($connectionId, 'message', 'Система: выбранное вами имя занято, попробуйте другое.');
                 } else {
@@ -54,7 +54,7 @@ class Chat2WebsocketWorkerHandler extends WebsocketWorker
         }
         //var_export($data);
         //шлем всем сообщение, о том, что пишет один из клиентов
-        //echo $data['payload'] . "\n";
+        //echo $data . "\n";
     }
 
     protected function onMasterMessage($packet) {//вызывается при получении сообщения от мастера

@@ -11,15 +11,15 @@ class WebsocketWorkerHandler extends WebsocketWorker
 
     }
 
-    protected function onMessage($connectionId, $data) {//вызывается при получении сообщения от клиента
-        if (!strlen($data['payload'])) {
+    protected function onMessage($connectionId, $data, $type) {//вызывается при получении сообщения от клиента
+        if (!strlen($data)) {
             return;
         }
 
         //var_export($data);
         //шлем всем сообщение, о том, что пишет один из клиентов
-        //echo $data['payload'] . "\n";
-        $message = 'пользователь #' . $connectionId . ' (' . $this->pid . '): ' . $data['payload'];
+        //echo $data . "\n";
+        $message = 'пользователь #' . $connectionId . ' (' . $this->pid . '): ' . $data;
         $this->sendToMaster($message);//отправляем сообщение на мастер, чтобы он разослал его на все воркеры
 
         foreach ($this->clients as $clientId => $client) {

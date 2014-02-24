@@ -28,6 +28,6 @@ class Websocket extends CApplicationComponent
     //можно вызывать из своих скриптов
     //отправляет данные в мастер, который перенаправляет их во все воркеры, которые пересылают клиентам
     public function send($message) {
-        return fwrite($this->getInstance(), $message);
+        return fwrite($this->getInstance(), $message . "\n");
     }
 }

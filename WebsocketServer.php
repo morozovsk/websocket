@@ -30,6 +30,10 @@ class WebsocketServer
             }
         }
 
+        if (!empty($this->config['master']['eventDriver']) && $this->config['master']['eventDriver'] == 'libevent') {
+            require_once('WebsocketGenericLibevent.php');
+        }
+
         list($pid, $master, $workers) = $this->spawnWorkers();//создаём дочерние процессы
 
         if ($pid) {//мастер

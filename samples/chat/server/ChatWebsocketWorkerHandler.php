@@ -11,15 +11,15 @@ class ChatWebsocketWorkerHandler extends WebsocketWorker
 
     }
 
-    protected function onMessage($connectionId, $data) {//вызывается при получении сообщения от клиента
-        if (!strlen($data['payload']) || !mb_check_encoding($data['payload'], 'utf-8')) {
+    protected function onMessage($connectionId, $data, $type) {//вызывается при получении сообщения от клиента
+        if (!strlen($data) || !mb_check_encoding($data, 'utf-8')) {
             return;
         }
 
         //var_export($data);
         //шлем всем сообщение, о том, что пишет один из клиентов
-        //echo $data['payload'] . "\n";
-        $message = 'пользователь #' . $connectionId . ' (' . $this->pid . '): ' . strip_tags($data['payload']);
+        //echo $data . "\n";
+        $message = 'пользователь #' . $connectionId . ' (' . $this->pid . '): ' . strip_tags($data);
         $this->sendToMaster($message);
 
         foreach ($this->clients as $clientId => $client) {

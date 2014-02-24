@@ -8,9 +8,9 @@ if (empty($argv[1]) || !in_array($argv[1], array('start', 'stop', 'restart'))) {
 $config = array(
     'master' => array(
         'class' => 'GameWebsocketMasterHandler',
-        //'socket' => 'tcp://127.0.0.1:8001',// unix:///tmp/mysock
+        //'socket' => 'unix:///tmp/game_socket',
         'workers' => 1,
-        'pid' => '/tmp/websocket2.pid',
+        'pid' => '/tmp/websocket_game.pid',
     ),
     'worker' => array(
         'socket' => 'tcp://127.0.0.1:8002',

@@ -60,13 +60,13 @@ class GameWebsocketWorkerHandler extends WebsocketWorker
         }
     }
 
-    protected function onMessage($connectionId, $data) {//вызывается при получении сообщения от клиента
-        if (!strlen($data['payload'])) {
+    protected function onMessage($connectionId, $data, $type) {//вызывается при получении сообщения от клиента
+        if (!strlen($data)) {
             return;
         }
 
         if ($login = array_search($connectionId, $this->logins)) {
-            if (substr($data['payload'], 0, 1) == '{' && $tank = @json_decode($data['payload'], true)) {
+            if (($tank = @json_decode($data, true)) && is_array($tank)) {
                 //var_export($tank) . "\n";
                 //$this->tanks[$connectionId] = $tank;
                 //var_dump($this->tanks[$connectionId]);
@@ -89,11 +89,11 @@ class GameWebsocketWorkerHandler extends WebsocketWorker
                     $this->ips[$ip] = $time;
                 }
 
-                $message = $login . ': ' . strip_tags($data['payload']);
+                $message = $login . ': ' . strip_tags($data);
                 $this->sendPacketToClients('message', $message);
             }
         } else {
-            if (preg_match('/^[a-zA-Z0-9]{1,10}$/', $data['payload'], $match)) {
+            if (preg_match('/^[a-zA-Z0-9]{1,10}$/', $data, $match)) {
                 if (isset($this->logins[$match[0]])) {
                     $this->sendPacketToClient($connectionId, 'message', 'Система: выбранное вами имя занято, попробуйте другое.');
                 } else {

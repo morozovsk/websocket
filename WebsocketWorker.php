@@ -28,7 +28,7 @@ abstract class WebsocketWorker extends WebsocketGeneric
             }
         } else {
             while (($data = $this->_decode($connectionId)) && mb_check_encoding($data['payload'], 'utf-8')) {//декодируем буфер (в нём может быть несколько сообщений)
-                $this->onMessage($connectionId, $data);//вызываем пользовательский сценарий
+                $this->onMessage($connectionId, $data['payload'], $data['type']);//вызываем пользовательский сценарий
             }
         }
     }
@@ -47,9 +47,9 @@ abstract class WebsocketWorker extends WebsocketGeneric
         }
     }
 
-    protected function sendToClient($connectionId, $data) {
+    protected function sendToClient($connectionId, $data, $type = 'text') {
         if (!isset($this->_handshakes[$connectionId])) {
-            $this->_write($connectionId, $this->_encode($data));
+            $this->_write($connectionId, $this->_encode($data, $type));
         }
     }
 
@@ -209,7 +209,7 @@ abstract class WebsocketWorker extends WebsocketGeneric
         return $decodedData;
     }
 
-    abstract protected function onMessage($connectionId, $data);
+    abstract protected function onMessage($connectionId, $data, $type);
 
     abstract protected function onOpen($connectionId);
 
