@@ -193,7 +193,9 @@ class GameWebsocketWorkerHandler extends WebsocketWorker
 
         foreach ($this->tanks as $tankId => $tank) {
             if ($this->bullets[$bulletId]['tankId'] != $tankId && abs($this->bullets[$bulletId]['x'] - $tank['x']) <= 1 && abs($this->bullets[$bulletId]['y'] - $tank['y']) <= 1) {
-                $this->tanks[$this->bullets[$bulletId]['tankId']]['health']++;
+                if (isset($this->tanks[$this->bullets[$bulletId]['tankId']])) {
+                    $this->tanks[$this->bullets[$bulletId]['tankId']]['health']++;
+                }
                 $this->tanks[$tankId]['health']--;
                 return false;
             }
