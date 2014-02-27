@@ -11,6 +11,7 @@ $config = array(
         //'socket' => 'unix:///tmp/game_socket',
         'workers' => 1,
         'pid' => '/tmp/websocket_game.pid',
+        //'eventDriver' => 'libevent'
     ),
     'worker' => array(
         'socket' => 'tcp://127.0.0.1:8002',

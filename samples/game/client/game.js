@@ -66,15 +66,19 @@ function drawTank(tank, i) {
 
     move = ((tank.dir == 'left' || tank.dir == 'right') && tank.x % 2 || (tank.dir == 'up' || tank.dir == 'down') && tank.y % 2);
 
-    context.drawImage(Models[ "tank" + (!i ? 1 : 2) + (move ? "m" : "")][tank.dir], (i ? tank.x : w/2) * cellsize - cellsize * 2, (i ? tank.y : h/2 - 0) * cellsize - cellsize * 2, 4 * cellsize, 4 * cellsize);
+    try {
+        context.drawImage(Models[ "tank" + (!i ? 1 : 2) + (move ? "m" : "")][tank.dir], (i ? tank.x : w/2) * cellsize - cellsize * 2, (i ? tank.y : h/2 - 0) * cellsize - cellsize * 2, 4 * cellsize, 4 * cellsize);
 
-    context.fillText(tank.name, (i ? tank.x : w/2) * cellsize, ((i ? tank.y : h/2) + 4) * cellsize);
+        context.fillText(tank.name, (i ? tank.x : w/2) * cellsize, ((i ? tank.y : h/2) + 4) * cellsize);
 
-    if (tank.health) {
-        context.fillStyle = "#000";
-        context.font = "10px sans-serif";
-        context.textBaseline = "bottom";
-        context.fillText(tank.health, (i ? tank.x : w/2) * cellsize, ((i ? tank.y : h/2) - 2) * cellsize);
+        if (tank.health) {
+            context.fillStyle = "#000";
+            context.font = "10px sans-serif";
+            context.textBaseline = "bottom";
+            context.fillText(tank.health, (i ? tank.x : w/2) * cellsize, ((i ? tank.y : h/2) - 2) * cellsize);
+        }
+    } catch (e) {
+        //console.log(e);
     }
 
     /*context.fillStyle = "#a5f5a5";
