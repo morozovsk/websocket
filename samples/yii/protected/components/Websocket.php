@@ -10,7 +10,7 @@ class Websocket extends CApplicationComponent
             'pid' => '/tmp/websocket2.pid',
         );
 
-    public $woker = array(
+    public $worker = array(
             'socket' => 'tcp://127.0.0.1:8002',
             'class' => 'GameWebsocketWorkerHandler',
             'timer' => 0.1
