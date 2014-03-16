@@ -32,6 +32,8 @@ class WebsocketServer
 
         if (!empty($this->config['master']['eventDriver']) && $this->config['master']['eventDriver'] == 'libevent') {
             require_once('WebsocketGenericLibevent.php');
+        } elseif (!empty($this->config['master']['eventDriver']) && $this->config['master']['eventDriver'] == 'event') {
+            require_once('WebsocketGenericEvent.php');
         }
 
         list($pid, $master, $workers) = $this->spawnWorkers();//создаём дочерние процессы
