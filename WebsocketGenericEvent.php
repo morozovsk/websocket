@@ -42,19 +42,8 @@ abstract class WebsocketGeneric
         $this->base->dispatch();
     }
 
-    private function service($listener, $connection, $address, $id) {
-        $connectionId = $this->getIdByConnection($connection);
-        $buffer = new EventBufferEvent($this->base, $connection, EventBufferEvent::OPT_CLOSE_ON_FREE);
-        $buffer->setCallbacks(array($this, "onRead"), array($this, "onWrite"), array($this, "onError"), $connectionId);
-        $buffer->enable(Event::READ | Event::WRITE | Event::PERSIST);
-        $this->clients[$connectionId] = $connection;
-        $this->buffers[$connectionId] = $buffer;
-    }
-
     public function accept($listener, $connection, $address, $id) {
-        //var_dump($connection);var_dump($listener);
         $connectionId = $this->getIdByConnection($connection);
-        //var_dump($connectionId);
         $buffer = new EventBufferEvent($this->base, $connection, EventBufferEvent::OPT_CLOSE_ON_FREE);
         $buffer->setCallbacks(array($this, "onRead"), array($this, "onWrite"), array($this, "onError"), $connectionId);
         $buffer->enable(Event::READ | Event::WRITE | Event::PERSIST);
@@ -89,8 +78,6 @@ abstract class WebsocketGeneric
 
     public function onError($buffer, $error, $connectionId) {
         //echo "Connection closed: $connectionId\n";
-        //var_dump($error);
-        //var_dump($this->getConnectionById($connectionId));
         $this->close($connectionId);
     }
 
@@ -143,9 +130,6 @@ abstract class WebsocketGeneric
     }
 
     protected function getConnectionById($connectionId) {
-        //var_dump($this->clients[$connectionId]);
-        //var_dump($this->_services[$connectionId]);
-        //var_dump($this->_server);
         return isset($this->clients[$connectionId]) ? $this->clients[$connectionId] :
             (isset($this->_services[$connectionId]) ? $this->_services[$connectionId] : $this->_server);
     }
