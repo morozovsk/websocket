@@ -16,14 +16,14 @@ class WebsocketCommand extends CConsoleCommand
 
     public function actionRestart()
     {
-        $WebsocketServer = new WebsocketServer(Yii::app()->websocket);
+        $WebsocketServer = new WebsocketServer( (array) Yii::app()->websocket);
         $WebsocketServer->start();
         $WebsocketServer->stop();
     }
 
     public function actionTest()
     {
-        $WebsocketClient = new WebsocketTest(Yii::app()->websocket);
+        $WebsocketClient = new WebsocketTest( (array) Yii::app()->websocket);
         $WebsocketClient->start();
     }
 }

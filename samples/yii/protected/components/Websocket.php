@@ -2,25 +2,18 @@
 
 class Websocket extends CApplicationComponent
 {
-    public $master =
-        array(
-            'class' => 'GameWebsocketMasterHandler',
-            'socket' => 'tcp://127.0.0.1:8001',// unix:///tmp/mysock
-            'workers' => 1,
-            'pid' => '/tmp/websocket2.pid',
-        );
-
-    public $worker = array(
-            'socket' => 'tcp://127.0.0.1:8002',
-            'class' => 'GameWebsocketWorkerHandler',
-            'timer' => 0.1
-        );
+    public $class = 'ChatWebsocketDaemonHandler';
+    public $pid = '/tmp/websocket_chat.pid';
+    public $websocket = 'tcp://127.0.0.1:8000';
+    public $localsocket = 'tcp://127.0.0.1:8010';
+    public $master = '';//tcp://127.0.0.1:8020
+    public $eventDriver = 'event';
 
     protected $instance = null;
 
     public function getInstance() {
         if (!$this->instance) {
-            $this->instance = stream_socket_client ($this->getOwner()->master['socket'], $errno, $errstr);//соединямся с мастер-процессом:
+            $this->instance = stream_socket_client ($this->getOwner()->localsocket, $errno, $errstr);//соединямся с мастер-процессом:
         }
         return $this->instance;
     }

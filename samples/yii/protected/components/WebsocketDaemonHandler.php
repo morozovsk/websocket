@@ -1,7 +1,7 @@
 <?php
 
 //пример реализации чата
-class WebsocketWorkerHandler extends WebsocketWorker
+class WebsocketDaemonHandler extends WebsocketDaemon
 {
     protected function onOpen($connectionId) {//вызывается при соединении с новым клиентом
 
@@ -16,18 +16,14 @@ class WebsocketWorkerHandler extends WebsocketWorker
             return;
         }
 
-        //var_export($data);
-        //шлем всем сообщение, о том, что пишет один из клиентов
-        //echo $data . "\n";
-        $message = 'пользователь #' . $connectionId . ' (' . $this->pid . '): ' . $data;
-        $this->sendToMaster($message);//отправляем сообщение на мастер, чтобы он разослал его на все воркеры
+        $message = 'пользователь #' . $connectionId . ' (' . $this->pid . '): ' . strip_tags($data);
 
         foreach ($this->clients as $clientId => $client) {
-            $this->sendToClient($clientId, $data);
+            $this->sendToClient($clientId, $message);
         }
     }
 
-    protected function onMasterMessage($data) {//вызывается при получении сообщения от мастера
+    protected function onServiceMessage($connectionId, $data) {//вызывается при получении сообщения от скриптов
         foreach ($this->clients as $clientId => $client) {
             $this->sendToClient($clientId, $data);
         }
