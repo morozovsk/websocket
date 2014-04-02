@@ -11,7 +11,7 @@ $config = array(
     'websocket' => 'tcp://127.0.0.1:8002',
     //'localsocket' => 'tcp://127.0.0.1:8010',
     //'master' => 'tcp://127.0.0.1:8020',
-    'eventDriver' => 'event',
+    //'eventDriver' => 'event',
     'timer' => 0.1
 );
 

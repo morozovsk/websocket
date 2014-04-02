@@ -11,7 +11,7 @@ $config = array(
     'websocket' => 'tcp://127.0.0.1:8001',
     //'localsocket' => 'tcp://127.0.0.1:8010',
     'master' => 'tcp://127.0.0.1:8010',//connect to master
-    'eventDriver' => 'event'
+    //'eventDriver' => 'event'
 );
 
 set_include_path(get_include_path() . PATH_SEPARATOR . realpath('../../../'));
