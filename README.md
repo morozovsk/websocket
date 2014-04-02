@@ -1,12 +1,13 @@
 Simple websocket server on php.
 
 ###Features:
-* server works with socket_select and does not require libevent.
-* you can run multiple processes on single port (one master and several workers).
+* server works with socket_select, pecl/event or pecl/libevent.
+* you can run multiple processes (one master and several workers).
 * integration with your framework.
 
 Examples directory:
-* chat - simple chat (live demo: http://sharoid.ru/chat.html )
+* chat - simple chat (single daemon) (live demo: http://sharoid.ru/chat.html )
+* chat2 - chat (master + worker) (live demo: http://sharoid.ru/chat2.html )
 * yii - sample of use yii with websockets: Yii::app()->websocket->send('Hello world');
 * game - simple game (live demo: http://sharoid.ru/game.html )
 
@@ -15,11 +16,10 @@ Run from console:
 * stop: "php index.php stop"
 * restart: "php index.php restart" or "nohup php index.php restart &"
 
-About:
+How it work (for russian speakers):
 * http://habrahabr.ru/company/ifree/blog/209864/
 * http://habrahabr.ru/company/ifree/blog/210228/
-
-###Live demos:
+* http://habrahabr.ru/company/ifree/blog/211504/
 
 ###License
 
