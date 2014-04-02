@@ -8,6 +8,7 @@ Simple websocket server on php.
 Examples directory:
 * chat - simple chat (live demo: http://sharoid.ru/chat.html )
 * yii - sample of use yii with websockets: Yii::app()->websocket->send('Hello world');
+* game - simple game (live demo: http://sharoid.ru/game.html )
 
 Run from console:
 * start: "php index.php start" or "nohup php index.php start &"
@@ -17,6 +18,8 @@ Run from console:
 About:
 * http://habrahabr.ru/company/ifree/blog/209864/
 * http://habrahabr.ru/company/ifree/blog/210228/
+
+###Live demos:
 
 ###License
 
