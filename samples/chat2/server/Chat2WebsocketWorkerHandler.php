@@ -1,9 +1,9 @@
 <?php
 
 //пример реализации чата
-class Chat2WebsocketWorkerHandler extends WebsocketWorker
+class Chat2WebsocketWorkerHandler extends WebsocketDaemon
 {
-    protected $ips;
+    protected $flud;
 
     protected $logins = array();
 
@@ -27,13 +27,11 @@ class Chat2WebsocketWorkerHandler extends WebsocketWorker
         }
 
         //антифлуд:
-        $source = explode(':', stream_socket_get_name($this->clients[$connectionId], true));
-        $ip = $source[0];
         $time = time();
-        if (isset($this->ips[$ip]) && $this->ips[$ip] == $time) {
+        if (isset($this->flud[$connectionId]) && $this->flud[$connectionId] == $time) {
             return;
         } else {
-            $this->ips[$ip] = $time;
+            $this->flud[$connectionId] = $time;
         }
 
         if ($login = array_search($connectionId, $this->logins)) {

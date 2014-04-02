@@ -1,7 +1,7 @@
 <?php
 
 //пример реализации чата
-class GameWebsocketWorkerHandler extends WebsocketWorker
+class GameWebsocketDaemonHandler extends WebsocketDaemon
 {
     protected $tanks = array();
     protected $bullets = array();
@@ -105,14 +105,6 @@ class GameWebsocketWorkerHandler extends WebsocketWorker
                 $this->sendPacketToClient($connectionId, 'message', 'Система: ошибка при выборе имени. В имени можно использовать английские буквы и цифры. Имя не должно превышать 10 символов.');
             }
         }
-    }
-
-    protected function onMasterMessage($data) {//вызывается при получении сообщения от мастера
-        //$this->onTimer();
-    }
-
-    protected function sendPacketToMaster($cmd, $data) {//отправляем сообщение на мастер, чтобы он разослал его на все воркеры
-        $this->sendToMaster($this->pack($cmd, $data));
     }
 
     private function sendPacketToClients($cmd, $data) {

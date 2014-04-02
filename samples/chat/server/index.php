@@ -6,16 +6,12 @@ if (empty($argv[1]) || !in_array($argv[1], array('start', 'stop', 'restart'))) {
 }
 
 $config = array(
-    'master' => array(
-        'class' => 'ChatWebsocketMasterHandler',
-        //'socket' => 'unix:///tmp/chat_socket',
-        'workers' => 1,
-        'pid' => '/tmp/websocket_chat.pid',
-    ),
-    'worker' => array(
-        'socket' => 'tcp://127.0.0.1:8000',
-        'class' => 'ChatWebsocketWorkerHandler',
-    ),
+    'class' => 'ChatWebsocketDaemonHandler',
+    'pid' => '/tmp/websocket_chat.pid',
+    'websocket' => 'tcp://127.0.0.1:8000',
+    //'localsocket' => 'tcp://127.0.0.1:8010',
+    //'master' => 'tcp://127.0.0.1:8020',
+    //'eventDriver' => 'event'
 );
 
 set_include_path(get_include_path() . PATH_SEPARATOR . realpath('../../../'));

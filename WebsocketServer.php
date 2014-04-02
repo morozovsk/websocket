@@ -11,18 +11,26 @@ class WebsocketServer
         if ($pid) {
             die("already started\r\n");
         }
-        //открываем серверный сокет
-        $server = stream_socket_server($this->config['worker']['socket'], $errorNumber, $errorString);
-        stream_set_blocking($server, 0);
 
-        if (!$server) {
-            die("error: stream_socket_server: $errorString ($errorNumber)\r\n");
+        if (empty($this->config['websocket']) && empty($this->config['localsocket']) && empty($this->config['master'])) {
+            die("error: config: !websocket && !localsocket && !master\r\n");
         }
 
-        $service = null;
-        if (!empty($this->config['master']['socket'])) {
+        $server = $service = $master = null;
+
+        if (!empty($this->config['websocket'])) {
+            //открываем серверный сокет
+            $server = stream_socket_server($this->config['websocket'], $errorNumber, $errorString);
+            stream_set_blocking($server, 0);
+
+            if (!$server) {
+                die("error: stream_socket_server: $errorString ($errorNumber)\r\n");
+            }
+        }
+
+        if (!empty($this->config['localsocket'])) {
             //создаём сокет для обработки сообщений от скриптов
-            $service = stream_socket_server($this->config['master']['socket'], $errorNumber, $errorString);
+            $service = stream_socket_server($this->config['localsocket'], $errorNumber, $errorString);
             stream_set_blocking($service, 0);
 
             if (!$service) {
@@ -30,16 +38,26 @@ class WebsocketServer
             }
         }
 
-        if (!empty($this->config['master']['eventDriver']) && $this->config['master']['eventDriver'] == 'libevent') {
+        if (!empty($this->config['master'])) {
+            //создаём сокет для обработки сообщений от скриптов
+            $master = stream_socket_client($this->config['master'], $errorNumber, $errorString);
+            stream_set_blocking($master, 0);
+
+            if (!$master) {
+                die("error: stream_socket_client: $errorString ($errorNumber)\r\n");
+            }
+        }
+
+        if (!empty($this->config['eventDriver']) && $this->config['eventDriver'] == 'libevent') {
             require_once('WebsocketGenericLibevent.php');
-        } elseif (!empty($this->config['master']['eventDriver']) && $this->config['master']['eventDriver'] == 'event') {
+        } elseif (!empty($this->config['eventDriver']) && $this->config['eventDriver'] == 'event') {
             require_once('WebsocketGenericEvent.php');
         }
 
-        list($pid, $master, $workers) = $this->spawnWorkers();//создаём дочерние процессы
+        //list($pid, $master, $workers) = $this->spawnWorkers();//создаём дочерние процессы
 
-        if ($pid) {//мастер
-            file_put_contents($this->config['master']['pid'], $pid);
+        /*if ($pid) {//мастер
+            file_put_contents($this->config['pid'], $pid);
             fclose($server);//мастер не будет обрабатывать входящие соединения на основном сокете
             $masterClass = $this->config['master']['class'];
             $master = new $masterClass ($service, $workers);//мастер будет обрабатывать сообщения от скриптов и пересылать их в воркеры
@@ -47,17 +65,17 @@ class WebsocketServer
                 $master->timer = $this->config['worker']['timer'];
             }
             $master->start();
-        } else {//воркер
-            $workerClass = $this->config['worker']['class'];
-            $worker = new $workerClass ($server, $master);
-            if (!empty($this->config['worker']['timer'])) {
-                $worker->timer = $this->config['worker']['timer'];
+        } else {//воркер*/
+            $workerClass = $this->config['class'];
+            $worker = new $workerClass ($server, $service, $master);
+            if (!empty($this->config['timer'])) {
+                $worker->timer = $this->config['timer'];
             }
             $worker->start();
-        }
+        //}
     }
 
-    protected function spawnWorkers() {
+    /*protected function spawnWorkers() {
         $master = null;
         $workers = array();
 
@@ -79,13 +97,13 @@ class WebsocketServer
         }
 
         return array($pid, $master, $workers);
-    }
+    }*/
 
     public function stop() {
-        $pid = @file_get_contents($this->config['master']['pid']);
+        $pid = @file_get_contents($this->config['pid']);
         if ($pid) {
             posix_kill($pid, SIGTERM);
-            unlink($this->config['master']['pid']);
+            unlink($this->config['pid']);
             /*sleep(1);
             posix_kill($pid, SIGKILL);
             sleep(1);
@@ -104,7 +122,7 @@ class WebsocketServer
     }
 
     public function restart() {
-        $pid = @file_get_contents($this->config['master']['pid']);
+        $pid = @file_get_contents($this->config['pid']);
         if ($pid) {
             $this->stop();
         }

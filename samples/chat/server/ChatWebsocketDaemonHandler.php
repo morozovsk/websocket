@@ -1,13 +1,13 @@
 <?php
 
 //пример реализации чата
-class ChatWebsocketWorkerHandler extends WebsocketWorker
+class ChatWebsocketDaemonHandler extends WebsocketDaemon
 {
     protected function onOpen($connectionId) {//вызывается при соединении с новым клиентом
 
     }
 
-    protected function onClose($connectionId) {//вызывается при закрытии соединения клиентом
+    protected function onClose($connectionId) {//вызывается при закрытии соединения с существующим клиентом
 
     }
 
@@ -20,16 +20,9 @@ class ChatWebsocketWorkerHandler extends WebsocketWorker
         //шлем всем сообщение, о том, что пишет один из клиентов
         //echo $data . "\n";
         $message = 'пользователь #' . $connectionId . ' (' . $this->pid . '): ' . strip_tags($data);
-        $this->sendToMaster($message);
 
         foreach ($this->clients as $clientId => $client) {
             $this->sendToClient($clientId, $message);
-        }
-    }
-
-    protected function onMasterMessage($data) {//вызывается при получении сообщения от мастера
-        foreach ($this->clients as $clientId => $client) {
-            $this->sendToClient($clientId, $data);
         }
     }
 }

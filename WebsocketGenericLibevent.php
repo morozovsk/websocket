@@ -7,17 +7,22 @@ abstract class WebsocketGeneric
     const MAX_SOCKETS = 1000;
     const SOCKET_MESSAGE_DELIMITER = "\n";
     protected $clients = array();
+    protected $services = array();
     protected $_server = null;
-    protected $_services = array();
+    protected $_service = null;
+    protected $_master = null;
     protected $_read = array();//буферы чтения
     protected $_write = array();//буферы заииси
-    private $base = NULL;
-    private $event = NULL;
+    private $base = null;
+    private $event = null;
+    private $service_event = null;
+    private $master_event = null;
     private $buffers = array();//буферы событий
-    private $events = array();
     public $timer = null;
 
     public function start() {
+        $this->onStart();
+
         $this->base = event_base_new();
 
         if ($this->_server) {
@@ -27,12 +32,18 @@ abstract class WebsocketGeneric
             event_add($this->event);
         }
 
-        foreach ($this->_services as $serviceId => $service) {
-            $event = event_new();
-            event_set($event, $service, EV_READ | EV_PERSIST | EV_WRITE, array($this, 'service'), $this->base);
-            event_base_set($event, $this->base);
-            event_add($event);
-            $this->events[$serviceId] = $event;
+        if ($this->_service) {
+            $this->service_event = event_new();
+            event_set($this->service_event, $this->_service, EV_READ | EV_PERSIST, array($this, 'service'), $this->base);
+            event_base_set($this->service_event, $this->base);
+            event_add($this->service_event);
+        }
+
+        if ($this->_master) {
+            $this->master_event = event_new();
+            event_set($this->master_event, $this->_master, EV_READ | EV_PERSIST | EV_WRITE, array($this, 'master'), $this->base);
+            event_base_set($this->master_event, $this->base);
+            event_add($this->master_event);
         }
 
         if ($this->timer) {
@@ -52,19 +63,6 @@ abstract class WebsocketGeneric
         $this->onTimer();
     }
 
-    private function service($connection, $flag, $base) {
-        $connectionId = $this->getIdByConnection($connection);
-        $buffer = event_buffer_new($connection, array($this, 'onRead'), array($this, 'onWrite'), array($this, 'onError'), $connectionId);
-        event_buffer_base_set($buffer, $this->base);
-        event_buffer_watermark_set($buffer, EV_READ, 0, 0xffffff);
-        event_buffer_priority_set($buffer, 10);
-        event_buffer_enable($buffer, EV_READ | EV_WRITE | EV_PERSIST);
-        $this->buffers[$connectionId] = $buffer;
-        event_del($this->events[$connectionId]);
-        event_free($this->events[$connectionId]);
-        unset($this->events[$connectionId]);
-    }
-
     private function accept($socket, $flag, $base) {
         $connection = @stream_socket_accept($socket, 0);
         $connectionId = $this->getIdByConnection($connection);
@@ -80,14 +78,51 @@ abstract class WebsocketGeneric
         $this->_onOpen($connectionId);
     }
 
+    private function service($socket, $flag, $base) {
+        $connection = @stream_socket_accept($socket, 0);
+        $connectionId = $this->getIdByConnection($connection);
+        stream_set_blocking($connection, 0);
+        $buffer = event_buffer_new($connection, array($this, 'onRead'), array($this, 'onWrite'), array($this, 'onError'), $connectionId);
+        event_buffer_base_set($buffer, $this->base);
+        event_buffer_watermark_set($buffer, EV_READ, 0, 0xffffff);
+        event_buffer_priority_set($buffer, 10);
+        event_buffer_enable($buffer, EV_READ | EV_WRITE | EV_PERSIST);
+        $this->services[$connectionId] = $connection;
+        $this->buffers[$connectionId] = $buffer;
+
+        $this->_onOpen($connectionId);
+    }
+
+    private function master($connection, $flag, $base) {
+        $connectionId = $this->getIdByConnection($connection);
+        $buffer = event_buffer_new($connection, array($this, 'onRead'), array($this, 'onWrite'), array($this, 'onError'), $connectionId);
+        event_buffer_base_set($buffer, $this->base);
+        event_buffer_watermark_set($buffer, EV_READ, 0, 0xffffff);
+        event_buffer_priority_set($buffer, 10);
+        event_buffer_enable($buffer, EV_READ | EV_WRITE | EV_PERSIST);
+        $this->buffers[$connectionId] = $buffer;
+        event_del($this->master_event);
+        event_free($this->master_event);
+        unset($this->master_event);
+    }
+
     private function onRead($buffer, $connectionId) {
-        if (in_array($connectionId, $this->_services)) {
-            if (!$this->_read($connectionId)) { //соединение было закрыто или превышен размер буфера
+        if (isset($this->services[$connectionId])) {
+            if (is_null($this->_read($connectionId))) { //соединение было закрыто или превышен размер буфера
                 $this->close($connectionId);
                 return;
             } else {
                 while ($data = $this->_readFromBuffer($connectionId)) {
-                    $this->_onService($connectionId, $data); //вызываем пользовательский сценарий
+                    $this->onServiceMessage($connectionId, $data); //вызываем пользовательский сценарий
+                }
+            }
+        } elseif ($this->getIdByConnection($this->_master) == $connectionId) {
+            if (is_null($this->_read($connectionId))) { //соединение было закрыто или превышен размер буфера
+                $this->close($connectionId);
+                return;
+            } else {
+                while ($data = $this->_readFromBuffer($connectionId)) {
+                    $this->onMasterMessage($data); //вызываем пользовательский сценарий
                 }
             }
         } else {
@@ -114,22 +149,26 @@ abstract class WebsocketGeneric
 
         if (isset($this->clients[$connectionId])) {
             unset($this->clients[$connectionId]);
-        } elseif (isset($this->_services[$connectionId])) {
-            unset($this->_services[$connectionId]);
-            if (!$this->_services) {
-                exit();
-            }
-        } elseif($this->getConnectionById($connectionId) == $this->_server) {
-            /*unset($this->_server);
-            event_del($this->event);
+        } elseif (isset($this->services[$connectionId])) {
+            unset($this->services[$connectionId]);
+        } elseif($this->getIdByConnection($this->_server) == $connectionId) {
+            unset($this->_server);
+            /*event_del($this->event);
             event_free($this->event);
-            exit();*/
+            unset($this->event);*/
+        } elseif ($this->getIdByConnection($this->_service) == $connectionId) {
+            unset($this->_service);
+            /*event_del($this->service_event);
+            event_free($this->service_event);
+            unset($this->service_event);*/
+        } elseif ($this->getIdByConnection($this->_master) == $connectionId) {
+            unset($this->_master);
         }
 
         unset($this->_write[$connectionId]);
         unset($this->_read[$connectionId]);
 
-        event_buffer_disable($this->buffers[$connectionId], EV_READ | EV_WRITE);
+        event_buffer_disable($this->buffers[$connectionId], EV_READ | EV_WRITE | EV_PERSIST);
         event_buffer_free($this->buffers[$connectionId]);
         unset($this->buffers[$connectionId]);
     }
@@ -152,24 +191,39 @@ abstract class WebsocketGeneric
     protected function _read($connectionId) {
         $data = event_buffer_read($this->buffers[$connectionId], self::SOCKET_BUFFER_SIZE);
 
-        if (!strlen($data)) return false;
+        if (!strlen($data)) return;
 
         @$this->_read[$connectionId] .= $data;//добавляем полученные данные в буфер чтения
         return strlen($this->_read[$connectionId]) < self::MAX_SOCKET_BUFFER_SIZE;
     }
 
     protected function getConnectionById($connectionId) {
-        return isset($this->clients[$connectionId]) ? $this->clients[$connectionId] :
-            (isset($this->_services[$connectionId]) ? $this->_services[$connectionId] : $this->_server);
+        if (isset($this->clients[$connectionId])) {
+            return $this->clients[$connectionId];
+        } elseif (isset($this->services[$connectionId])) {
+            return $this->services[$connectionId];
+        } elseif ($this->getIdByConnection($this->_server) == $connectionId) {
+            return $this->_server;
+        } elseif ($this->getIdByConnection($this->_service) == $connectionId) {
+            return $this->_service;
+        } elseif ($this->getIdByConnection($this->_master) == $connectionId) {
+            return $this->_master;
+        }
     }
 
     protected function getIdByConnection($connection) {
         return intval($connection);
     }
 
+    abstract protected function _onOpen($connectionId);
+
     abstract protected function _onMessage($connectionId);
 
-    abstract protected function _onService($connectionId, $data);
+    abstract protected function onServiceMessage($connectionId, $data);
 
-    abstract protected function _onOpen($connectionId);
+    abstract protected function onMasterMessage($data);
+
+    abstract protected function onServiceOpen($connectionId);
+
+    abstract protected function onServiceClose($connectionId);
 }

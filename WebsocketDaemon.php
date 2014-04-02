@@ -1,6 +1,6 @@
 <?php
 
-abstract class WebsocketWorker extends WebsocketGeneric
+abstract class WebsocketDaemon extends WebsocketGeneric
 {
     protected $pid;
     private $_handshakes = array();

@@ -1,16 +1,10 @@
 <?php
 
-class Chat2WebsocketMasterHandler extends WebsocketMaster
+class Chat2WebsocketMasterHandler extends WebsocketDaemon
 {
     protected $logins = array();
 
-    protected function onMessage($connectionId, $packet) //вызывается при получении сообщения от скриптов
-    {
-
-    }
-
-    protected function onWorkerMessage($connectionId, $packet) //вызывается при получении сообщения от воркера
-    {
+    protected function onServiceMessage($connectionId, $packet) {//вызывается при получении сообщения от воркера
         $packet = $this->unpack($packet);
 
         if ($packet['cmd'] == 'message') {
@@ -43,14 +37,14 @@ class Chat2WebsocketMasterHandler extends WebsocketMaster
     }
 
     public function sendPacketToWorker($connectionId, $cmd, $data) {
-        $this->sendToWorker($connectionId, $this->pack($cmd, $data));
+        $this->sendToService($connectionId, $this->pack($cmd, $data));
     }
 
     public function sendPacketToOtherWorkers($connectionId, $cmd, $data) {
         $data = $this->pack($cmd, $data);
-        foreach ($this->workers as $workerId => $worker) { //пересылаем данные во все воркеры
+        foreach ($this->services as $workerId => $worker) { //пересылаем данные во все воркеры
             if ($workerId !== $connectionId) {
-                $this->sendToWorker($workerId, $data);
+                $this->sendToService($workerId, $data);
             }
         }
     }
