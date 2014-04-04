@@ -220,10 +220,7 @@ $(function () {
                 drawBullets(pack.data.bullets);
                 drawMinimap(pack.data.tanks[0]);
                 canvas.css('backgroundPosition', -pack.data.tanks[0].x * cellsize + 'px -' + pack.data.tanks[0].y * cellsize + 'px');
-
-                if (paused) {
-                    paused = false;
-                }
+                paused = false;
             }
         };
     }
