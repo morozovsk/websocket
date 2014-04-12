@@ -7,7 +7,7 @@ class Chat2WebsocketWorkerHandler extends WebsocketDaemon
 
     protected $logins = array();
 
-    protected function onOpen($connectionId) {//вызывается при соединении с новым клиентом
+    protected function onOpen($connectionId, $info) {//вызывается при соединении с новым клиентом
         if ($this->logins) {
             $this->sendPacketToClient($connectionId, 'logins', array_keys($this->logins));
         }

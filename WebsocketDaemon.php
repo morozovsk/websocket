@@ -68,6 +68,20 @@ abstract class WebsocketDaemon extends WebsocketGeneric
             return false;
         }
 
+        $headers = explode("\r\n", $this->_read[$connectionId]);
+        $info = array();
+
+        foreach ($headers as $header) {
+            if (($explode = explode(':', $header)) && isset($explode[1])) {
+                $info[trim($explode[0])] = trim($explode[1]);
+            } elseif (($explode = explode(' ', $header)) && isset($explode[1])) {
+                $info[$explode[0]] = $explode[1];
+            }
+        }
+
+        /*$source = explode(':', stream_socket_get_name($this->clients[$connectionId], true));
+        $info['Ip'] = $source[0];*/
+
         $this->_read[$connectionId] = '';
 
         //отправляем заголовок согласно протоколу вебсокета
@@ -80,7 +94,7 @@ abstract class WebsocketDaemon extends WebsocketGeneric
         $this->_write($connectionId, $upgrade);
         unset($this->_handshakes[$connectionId]);
 
-        $this->onOpen($connectionId);
+        $this->onOpen($connectionId, $info);
 
         return true;
     }

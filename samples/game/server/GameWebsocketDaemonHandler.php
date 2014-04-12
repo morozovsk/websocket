@@ -42,7 +42,7 @@ class GameWebsocketDaemonHandler extends WebsocketDaemon
         $this->sendData();
     }
 
-    protected function onOpen($connectionId) {//вызывается при соединении с новым клиентом
+    protected function onOpen($connectionId, $info) {//вызывается при соединении с новым клиентом
         /*static $startTimer = 0;
         if (!$startTimer) {
             $startTimer = 1;
