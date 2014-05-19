@@ -54,6 +54,8 @@ class WebsocketServer
             require_once('WebsocketGenericEvent.php');
         }
 
+        file_put_contents($this->config['pid'], posix_getpid());
+
         //list($pid, $master, $workers) = $this->spawnWorkers();//создаём дочерние процессы
 
         /*if ($pid) {//мастер
