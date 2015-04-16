@@ -15,5 +15,10 @@
     ],
     "support": {
         "issues": "https://github.com/morozovsk/websocket/issues"
+    },
+    "autoload": {
+        "classmap": [
+            ""
+        ]
     }
 }
