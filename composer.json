@@ -1,0 +1,8 @@
+{
+    "name": "morozovsk/websocket",
+    "description": "simple php websocket server",
+    "require": {
+        "php": ">=5.3.0",
+        "another-vendor/package": "1.*"
+    }
+}
