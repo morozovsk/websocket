@@ -9,22 +9,10 @@
     "license": "MIT",
     "homepage": "http://sharoid.ru/game.html",
     "authors": [
-        {
-            "name": "simple chat (single daemon)",
-            "homepage": "http://sharoid.ru/chat.html",
-            "role": "demo"
-        },
-        {
-            "name": "pro chat (master + worker)",
-            "homepage": "http://sharoid.ru/chat2.html",
-            "role": "demo"
-        },
-        {
-            "name": "simple game",
-            "homepage": "http://sharoid.ru/game.html",
-            "role": "demo"
-        }
-        ],
+        {"name": "simple chat (single daemon)", "homepage": "http://sharoid.ru/chat.html"},
+        {"name": "pro chat (master + worker)", "homepage": "http://sharoid.ru/chat2.html"},
+        {"name": "simple game", "homepage": "http://sharoid.ru/game.html"}
+    ],
     "support": {
         "issues": "https://github.com/morozovsk/websocket/issues"
     }
