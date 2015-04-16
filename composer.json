@@ -1,6 +1,6 @@
 {
     "name": "morozovsk/websocket",
-    "description": "simple php websocket server with examples and demo: \\n simple chat (single daemon) - http://sharoid.ru/chat.html , \\n pro chat (master + worker) - http://sharoid.ru/chat2.html , \\n simple game - http://sharoid.ru/game.html",
+    "description": "simple php websocket server with examples and demo: simple chat (single daemon) - http://sharoid.ru/chat.html , pro chat (master + worker) - http://sharoid.ru/chat2.html , simple game - http://sharoid.ru/game.html",
     "keywords": ["websocket", "server", "examle", "demo", "chat", "game", "socket_select", "event", "libevent", "yii", "laravel"],
     "require": {
         "php": ">=5.3.0",
