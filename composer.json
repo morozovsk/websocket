@@ -7,7 +7,7 @@
     },
     "version": "2.0.0",
     "license": "MIT",
-    "homepage": "http://sharoid.ru/game.html"
+    "homepage": "http://sharoid.ru/game.html",
     "authors": [
         {
             "name": "simple chat (single daemon)",
