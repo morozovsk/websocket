@@ -159,8 +159,6 @@ class Game2WebsocketDaemonHandler extends WebsocketDaemon
             $this->skill_code++;
             $this->skills[] = $item;
         }
-
-        echo 1;
     }
 
     protected function onTimer()//$this->interval_send_data
