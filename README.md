@@ -10,7 +10,7 @@ Examples directory:
 * chat2 - chat (master + worker) (live demo: http://sharoid.ru/chat2.html )
 * yii - sample of use yii with websockets: Yii::app()->websocket->send('Hello world');
 * game - simple game (live demo: http://sharoid.ru/game.html )
-* game2 - game (live demo: http://sharoid.ru/game2.html )
+* game2 - game (live demo: http://sharoid.ru/game2.html ) (port of node.js game: https://github.com/amikstrike/wn)
 * 
 Run from console:
 * start: "php index.php start" or "nohup php index.php start &"
