@@ -21,6 +21,9 @@ How it work (for russian speakers):
 * http://habrahabr.ru/company/ifree/blog/210228/
 * http://habrahabr.ru/company/ifree/blog/211504/
 
+Fork for Laravel 4:
+* https://github.com/Cherry-Pie/websocket
+
 ###License
 
 (The MIT License)

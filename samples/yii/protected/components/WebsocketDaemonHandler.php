@@ -3,7 +3,7 @@
 //пример реализации чата
 class WebsocketDaemonHandler extends WebsocketDaemon
 {
-    protected function onOpen($connectionId) {//вызывается при соединении с новым клиентом
+    protected function onOpen($connectionId, $info) {//вызывается при соединении с новым клиентом
 
     }
 
