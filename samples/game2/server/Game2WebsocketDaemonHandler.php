@@ -200,7 +200,7 @@ class Game2WebsocketDaemonHandler extends WebsocketDaemon
                 /*}, $this->interval_send_data * 2
             );*/
             unset($this->units[$connectionId]); //удаляем игрока из массива игроков.
-            unset($this->all_objects[$connectionId]); //удаляем игрока из массива игроков.
+            unset($this->all_objects[$this->get_object($connectionId)]); //удаляем игрока из массива игроков.
 
             unset($this->packet_ready[$connectionId]);
             unset($this->me_ready[$connectionId]);
