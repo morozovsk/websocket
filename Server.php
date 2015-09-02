@@ -1,6 +1,8 @@
 <?php
 
-class WebsocketServer
+namespace morozovsk\websocket;
+
+class Server
 {
     public function __construct($config) {
         $this->config = $config;
@@ -49,9 +51,11 @@ class WebsocketServer
         }
 
         if (!empty($this->config['eventDriver']) && $this->config['eventDriver'] == 'libevent') {
-            require_once('WebsocketGenericLibevent.php');
+            class_alias('morozovsk\websocket\GenericLibevent', 'morozovsk\websocket\Generic');
         } elseif (!empty($this->config['eventDriver']) && $this->config['eventDriver'] == 'event') {
-            require_once('WebsocketGenericEvent.php');
+            class_alias('morozovsk\websocket\GenericEvent', 'morozovsk\websocket\Generic');
+        } else {
+            class_alias('morozovsk\websocket\GenericSelect', 'morozovsk\websocket\Generic');
         }
 
         file_put_contents($this->config['pid'], posix_getpid());

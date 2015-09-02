@@ -1,7 +1,9 @@
 <?php
 
+namespace morozovsk\websocket;
+
 //пример реализации чата
-class ChatWebsocketDaemonHandler extends WebsocketDaemon
+class ChatWebsocketDaemonHandler extends Daemon
 {
     protected function onOpen($connectionId, $info) {//вызывается при соединении с новым клиентом
 

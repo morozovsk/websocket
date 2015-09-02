@@ -1,7 +1,9 @@
 <?php
 
+namespace morozovsk\websocket;
+
 //пример реализации чата
-class GameWebsocketDaemonHandler extends WebsocketDaemon
+class GameWebsocketDaemonHandler extends Daemon
 {
     protected $tanks = array();
     protected $bullets = array();

@@ -1,6 +1,8 @@
 <?php
 
-abstract class WebsocketGeneric
+namespace morozovsk\websocket;
+
+abstract class GenericEvent
 {
     const SOCKET_BUFFER_SIZE = 1024;
     const MAX_SOCKET_BUFFER_SIZE = 10240;
@@ -49,6 +51,7 @@ abstract class WebsocketGeneric
     }
 
     public function accept($listener, $connection, $address, $id) {
+        var_dump([$listener, $connection, $address, $id]);
         $connectionId = $this->getIdByConnection($connection);
         $buffer = new EventBufferEvent($this->base, $connection, EventBufferEvent::OPT_CLOSE_ON_FREE);
         $buffer->setCallbacks(array($this, "onRead"), array($this, "onWrite"), array($this, "onError"), $connectionId);

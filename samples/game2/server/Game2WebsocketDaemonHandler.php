@@ -1,7 +1,9 @@
 <?php
 
+namespace morozovsk\websocket;
+
 //пример реализации чата
-class Game2WebsocketDaemonHandler extends WebsocketDaemon
+class Game2WebsocketDaemonHandler extends Daemon
 {
     protected $units = []; //массив юнитов
     protected $items = []; //массив обьектов

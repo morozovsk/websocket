@@ -1,6 +1,8 @@
 <?php
 
-class WebsocketTest
+namespace morozovsk\websocket;
+
+class Test
 {
     public $clients = array();
     public function __construct($config) {

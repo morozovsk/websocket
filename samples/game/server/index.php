@@ -6,7 +6,7 @@ if (empty($argv[1]) || !in_array($argv[1], array('start', 'stop', 'restart'))) {
 }
 
 $config = array(
-    'class' => 'GameWebsocketDaemonHandler',
+    'class' => 'morozovsk\websocket\GameWebsocketDaemonHandler',
     'pid' => '/tmp/websocket_game.pid',
     'websocket' => 'tcp://127.0.0.1:8002',
     //'localsocket' => 'tcp://127.0.0.1:8010',
@@ -15,9 +15,7 @@ $config = array(
     'timer' => 0.1
 );
 
-set_include_path(get_include_path() . PATH_SEPARATOR . realpath('../../../'));
+require_once __DIR__ . '/../../../../../autoload.php';
 
-spl_autoload_register(function ($class) { include $class . '.php'; });
-
-$WebsocketServer = new WebsocketServer($config);
+$WebsocketServer = new morozovsk\websocket\Server($config);
 call_user_func(array($WebsocketServer, $argv[1]));

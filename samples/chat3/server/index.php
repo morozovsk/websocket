@@ -6,7 +6,7 @@ if (empty($argv[1]) || !in_array($argv[1], array('start', 'stop', 'restart'))) {
 }
 
 $config = array(
-    'class' => 'Chat3WebsocketDaemonHandler',
+    'class' => 'morozovsk\websocket\Chat3WebsocketDaemonHandler',
     'pid' => '/tmp/websocket_chat.pid',
     'websocket' => 'tcp://127.0.0.1:8004',
     'localsocket' => 'tcp://127.0.0.1:8010',
@@ -14,9 +14,7 @@ $config = array(
     //'eventDriver' => 'event'
 );
 
-set_include_path(get_include_path() . PATH_SEPARATOR . realpath('../../../'));
+require_once __DIR__ . '/../../../../../autoload.php';
 
-spl_autoload_register(function ($class) { include $class . '.php'; });
-
-$WebsocketServer = new WebsocketServer($config);
+$WebsocketServer = new morozovsk\websocket\Server($config);
 call_user_func(array($WebsocketServer, $argv[1]));

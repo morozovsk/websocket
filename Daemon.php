@@ -1,6 +1,8 @@
 <?php
 
-abstract class WebsocketDaemon extends WebsocketGeneric
+namespace morozovsk\websocket;
+
+abstract class Daemon extends Generic
 {
     protected $pid;
     private $_handshakes = array();

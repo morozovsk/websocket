@@ -17,8 +17,8 @@
         "issues": "https://github.com/morozovsk/websocket/issues"
     },
     "autoload": {
-        "classmap": [
-            "/"
-        ]
+        "psr-4": {
+            "morozovsk\\websocket\\": ""
+        }
     }
 }
