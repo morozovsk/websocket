@@ -1,9 +1,9 @@
 <?php
 
-namespace morozovsk\websocket;
+namespace morozovsk\websocket\samples;
 
 //пример реализации чата
-class Chat2WebsocketWorkerHandler extends Daemon
+class Chat2WebsocketWorkerHandler extends \morozovsk\websocket\Daemon
 {
     protected $flud;
 

@@ -1,5 +1,7 @@
 Simple websocket server on php.
 
+"composer require morozovsk/websocket"
+
 ###Features:
 * server works with socket_select, pecl/event or pecl/libevent.
 * you can run multiple processes (one master and several workers).

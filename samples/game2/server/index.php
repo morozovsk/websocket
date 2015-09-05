@@ -6,7 +6,7 @@ if (empty($argv[1]) || !in_array($argv[1], array('start', 'stop', 'restart'))) {
 }
 
 $config = array(
-    'class' => 'morozovsk\websocket\Game2WebsocketDaemonHandler',
+    'class' => 'morozovsk\websocket\samples\Game2WebsocketDaemonHandler',
     'pid' => '/tmp/websocket_game2.pid',
     'websocket' => 'tcp://127.0.0.1:8003',
     //'localsocket' => 'tcp://127.0.0.1:8010',

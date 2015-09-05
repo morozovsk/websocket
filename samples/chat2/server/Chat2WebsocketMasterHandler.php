@@ -1,8 +1,8 @@
 <?php
 
-namespace morozovsk\websocket;
+namespace morozovsk\websocket\samples;
 
-class Chat2WebsocketMasterHandler extends Daemon
+class Chat2WebsocketMasterHandler extends \morozovsk\websocket\Daemon
 {
     protected $logins = array();
 
