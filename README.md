@@ -11,21 +11,22 @@ Simple websocket server on php.
 * chat - simple chat (single daemon) (live demo: http://sharoid.ru/chat.html )
 * chat2 - chat (master + worker) (live demo: http://sharoid.ru/chat2.html )
 * chat3 - chat (single daemon + script who can send personal message by clientId, userId or PHPSESSID)
-* yii - sample of use yii with websockets: Yii::app()->websocket->send('Hello world');
 * game - simple game (live demo: http://sharoid.ru/game.html )
 * game2 - game (live demo: http://sharoid.ru/game2.html ) (port of node.js game: https://github.com/amikstrike/wn)
-* 
+
 Run from console:
 * start: "php index.php start" or "nohup php index.php start &"
 * stop: "php index.php stop"
 * restart: "php index.php restart" or "nohup php index.php restart &"
 
-How it work (for russian speakers):
+#####yii2-websocket https://github.com/morozovsk/yii2-websocket
+
+#####How it work (for russian speakers):
 * http://habrahabr.ru/company/ifree/blog/209864/
 * http://habrahabr.ru/company/ifree/blog/210228/
 * http://habrahabr.ru/company/ifree/blog/211504/
 
-Fork for Laravel 4:
+#####Fork for Laravel 4:
 * https://github.com/Cherry-Pie/websocket
 
 #####License
