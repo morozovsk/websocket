@@ -2,12 +2,12 @@ Simple websocket server on php.
 
 "composer require morozovsk/websocket"
 
-###Features:
+#####Features:
 * server works with socket_select, pecl/event or pecl/libevent.
 * you can run multiple processes (one master and several workers).
 * integration with your framework.
 
-Examples directory:
+#####Examples https://github.com/morozovsk/websocket-examples
 * chat - simple chat (single daemon) (live demo: http://sharoid.ru/chat.html )
 * chat2 - chat (master + worker) (live demo: http://sharoid.ru/chat2.html )
 * chat3 - chat (single daemon + script who can send personal message by clientId, userId or PHPSESSID)
@@ -28,7 +28,7 @@ How it work (for russian speakers):
 Fork for Laravel 4:
 * https://github.com/Cherry-Pie/websocket
 
-###License
+#####License
 
 (The MIT License)
 
