@@ -224,7 +224,7 @@ abstract class Daemon extends Generic
         return $decodedData;
     }
 
-    protected function onOpen($connectionId) {}
+    protected function onOpen($connectionId, $info) {}
     protected function onClose($connectionId) {}
     protected function onMessage($connectionId, $packet, $type) {}
 
