@@ -11,7 +11,11 @@ class Server
     public function start() {
         $pid = @file_get_contents($this->config['pid']);
         if ($pid) {
-            die("already started\r\n");
+            if (posix_getpgid($pid)) {
+                die("already started\r\n");
+            } else {
+                unlink($this->config['pid']);
+            }
         }
 
         if (empty($this->config['websocket']) && empty($this->config['localsocket']) && empty($this->config['master'])) {
@@ -109,19 +113,16 @@ class Server
         $pid = @file_get_contents($this->config['pid']);
         if ($pid) {
             posix_kill($pid, SIGTERM);
-            unlink($this->config['pid']);
-            /*sleep(1);
-            posix_kill($pid, SIGKILL);
-            sleep(1);
-            if ($websocket = @stream_socket_client ($this->config['websocket'], $errno, $errstr)) {
-                stream_socket_shutdown($websocket, STREAM_SHUT_RDWR);
+            for ($i=0;$i=10;$i++) {
+                sleep(1);
+
+                if (!posix_getpgid($pid)) {
+                    unlink($this->config['pid']);
+                    return;
+                }
             }
 
-            if (!empty($this->config['localsocket'])) {
-                if ($localsocket = stream_socket_client ($this->config['localsocket'], $errno, $errstr)) {
-                    stream_socket_shutdown($localsocket, STREAM_SHUT_RDWR);
-                }
-            }*/
+            die("don't stopped\r\n");
         } else {
             die("already stopped\r\n");
         }

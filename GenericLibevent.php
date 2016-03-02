@@ -92,7 +92,7 @@ abstract class GenericLibevent
         $this->services[$connectionId] = $connection;
         $this->buffers[$connectionId] = $buffer;
 
-        $this->_onOpen($connectionId);
+        $this->onServiceOpen($connectionId);
     }
 
     private function master($connection, $flag, $base) {
@@ -147,28 +147,7 @@ abstract class GenericLibevent
     }
 
     protected function close($connectionId) {
-        fclose($this->getConnectionById($connectionId));
-
-        if (isset($this->clients[$connectionId])) {
-            unset($this->clients[$connectionId]);
-        } elseif (isset($this->services[$connectionId])) {
-            unset($this->services[$connectionId]);
-        } elseif($this->getIdByConnection($this->_server) == $connectionId) {
-            unset($this->_server);
-            /*event_del($this->event);
-            event_free($this->event);
-            unset($this->event);*/
-        } elseif ($this->getIdByConnection($this->_service) == $connectionId) {
-            unset($this->_service);
-            /*event_del($this->service_event);
-            event_free($this->service_event);
-            unset($this->service_event);*/
-        } elseif ($this->getIdByConnection($this->_master) == $connectionId) {
-            unset($this->_master);
-        }
-
-        unset($this->_write[$connectionId]);
-        unset($this->_read[$connectionId]);
+        @fclose($this->getConnectionById($connectionId));
 
         event_buffer_disable($this->buffers[$connectionId], EV_READ | EV_WRITE | EV_PERSIST);
         event_buffer_free($this->buffers[$connectionId]);
@@ -198,34 +177,4 @@ abstract class GenericLibevent
         @$this->_read[$connectionId] .= $data;//добавляем полученные данные в буфер чтения
         return strlen($this->_read[$connectionId]) < self::MAX_SOCKET_BUFFER_SIZE;
     }
-
-    protected function getConnectionById($connectionId) {
-        if (isset($this->clients[$connectionId])) {
-            return $this->clients[$connectionId];
-        } elseif (isset($this->services[$connectionId])) {
-            return $this->services[$connectionId];
-        } elseif ($this->getIdByConnection($this->_server) == $connectionId) {
-            return $this->_server;
-        } elseif ($this->getIdByConnection($this->_service) == $connectionId) {
-            return $this->_service;
-        } elseif ($this->getIdByConnection($this->_master) == $connectionId) {
-            return $this->_master;
-        }
-    }
-
-    protected function getIdByConnection($connection) {
-        return intval($connection);
-    }
-
-    abstract protected function _onOpen($connectionId);
-
-    abstract protected function _onMessage($connectionId);
-
-    abstract protected function onServiceMessage($connectionId, $data);
-
-    abstract protected function onMasterMessage($data);
-
-    abstract protected function onServiceOpen($connectionId);
-
-    abstract protected function onServiceClose($connectionId);
 }

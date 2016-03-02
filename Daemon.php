@@ -39,9 +39,28 @@ abstract class Daemon extends Generic
             unset($this->_handshakes[$connectionId]);
         } elseif (isset($this->clients[$connectionId])) {
             $this->onClose($connectionId);//вызываем пользовательский сценарий
+        } elseif (isset($this->services[$connectionId])) {
+            $this->onServiceClose($connectionId);//вызываем пользовательский сценарий
+        } elseif ($this->getIdByConnection($this->_master) == $connectionId) {
+            $this->onMasterClose($connectionId);//вызываем пользовательский сценарий
         }
 
         parent::close($connectionId);
+
+        if (isset($this->clients[$connectionId])) {
+            unset($this->clients[$connectionId]);
+        } elseif (isset($this->services[$connectionId])) {
+            unset($this->services[$connectionId]);
+        } elseif ($this->getIdByConnection($this->_server) == $connectionId) {
+            $this->_server = null;
+        } elseif ($this->getIdByConnection($this->_service) == $connectionId) {
+            $this->_service = null;
+        } elseif ($this->getIdByConnection($this->_master) == $connectionId) {
+            $this->_master = null;
+        }
+
+        unset($this->_write[$connectionId]);
+        unset($this->_read[$connectionId]);
     }
 
     protected function sendToClient($connectionId, $data, $type = 'text') {
@@ -146,6 +165,8 @@ abstract class Daemon extends Generic
     {
         $data = $this->_read[$connectionId];
 
+        if (strlen($data) < 2) return false;
+
         $unmaskedPayload = '';
         $decodedData = array();
 
@@ -186,18 +207,17 @@ abstract class Daemon extends Generic
         }
 
         if ($payloadLength === 126) {
-            $mask = substr($data, 4, 4);
+            if (strlen($data) < 4) return false;
             $payloadOffset = 8;
             $dataLength = bindec(sprintf('%08b', ord($data[2])) . sprintf('%08b', ord($data[3]))) + $payloadOffset;
         } elseif ($payloadLength === 127) {
-            $mask = substr($data, 10, 4);
+            if (strlen($data) < 10) return false;
             $payloadOffset = 14;
             for ($tmp = '', $i = 0; $i < 8; $i++) {
                 $tmp .= sprintf('%08b', ord($data[$i + 2]));
             }
             $dataLength = bindec($tmp) + $payloadOffset;
         } else {
-            $mask = substr($data, 2, 4);
             $payloadOffset = 6;
             $dataLength = $payloadLength + $payloadOffset;
         }
@@ -209,6 +229,14 @@ abstract class Daemon extends Generic
         }
 
         if ($isMasked) {
+            if ($payloadLength === 126) {
+                $mask = substr($data, 4, 4);
+            } elseif ($payloadLength === 127) {
+                $mask = substr($data, 10, 4);
+            } else {
+                $mask = substr($data, 2, 4);
+            }
+
             for ($i = $payloadOffset; $i < $dataLength; $i++) {
                 $j = $i - $payloadOffset;
                 if (isset($data[$i])) {
@@ -224,15 +252,34 @@ abstract class Daemon extends Generic
         return $decodedData;
     }
 
+    protected function getConnectionById($connectionId) {
+        if (isset($this->clients[$connectionId])) {
+            return $this->clients[$connectionId];
+        } elseif (isset($this->services[$connectionId])) {
+            return $this->services[$connectionId];
+        } elseif ($this->getIdByConnection($this->_server) == $connectionId) {
+            return $this->_server;
+        } elseif ($this->getIdByConnection($this->_service) == $connectionId) {
+            return $this->_service;
+        } elseif ($this->getIdByConnection($this->_master) == $connectionId) {
+            return $this->_master;
+        }
+    }
+
+    protected function getIdByConnection($connection) {
+        return intval($connection);
+    }
+
     protected function onOpen($connectionId, $info) {}
     protected function onClose($connectionId) {}
     protected function onMessage($connectionId, $packet, $type) {}
 
     protected function onServiceMessage($connectionId, $data) {}
-    protected function onServiceOpen($data) {}
-    protected function onServiceClose($data) {}
+    protected function onServiceOpen($connectionId) {}
+    protected function onServiceClose($connectionId) {}
 
     protected function onMasterMessage($data) {}
+    protected function onMasterClose($connectionId) {}
 
     protected function onStart() {}
 }

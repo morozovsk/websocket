@@ -138,21 +138,6 @@ abstract class GenericSelect
 
     protected function close($connectionId) {
         @fclose($this->getConnectionById($connectionId));
-
-        if (isset($this->clients[$connectionId])) {
-            unset($this->clients[$connectionId]);
-        } elseif (isset($this->services[$connectionId])) {
-            unset($this->services[$connectionId]);
-        } elseif($this->getConnectionById($connectionId) == $this->_server) {
-            unset($this->_server);
-        } elseif ($this->getConnectionById($connectionId) == $this->_service) {
-            unset($this->_service);
-        } elseif ($this->getConnectionById($connectionId) == $this->_master) {
-            unset($this->_master);
-        }
-
-        unset($this->_write[$connectionId]);
-        unset($this->_read[$connectionId]);
     }
 
     protected function _write($connectionId, $data, $delimiter = '') {
@@ -185,24 +170,6 @@ abstract class GenericSelect
         return strlen($this->_read[$connectionId]) < self::MAX_SOCKET_BUFFER_SIZE;
     }
 
-    protected function getConnectionById($connectionId) {
-        if (isset($this->clients[$connectionId])) {
-            return $this->clients[$connectionId];
-        } elseif (isset($this->services[$connectionId])) {
-            return $this->services[$connectionId];
-        } elseif ($this->getIdByConnection($this->_server) == $connectionId) {
-            return $this->_server;
-        } elseif ($this->getIdByConnection($this->_service) == $connectionId) {
-            return $this->_service;
-        } elseif ($this->getIdByConnection($this->_master) == $connectionId) {
-            return $this->_master;
-        }
-    }
-
-    protected function getIdByConnection($connection) {
-        return intval($connection);
-    }
-
     protected function _createTimer() {
         $pair = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
 
@@ -224,16 +191,4 @@ abstract class GenericSelect
             }
         }
     }
-
-    abstract protected function _onOpen($connectionId);
-
-    abstract protected function _onMessage($connectionId);
-
-    abstract protected function onServiceMessage($connectionId, $data);
-
-    abstract protected function onMasterMessage($data);
-
-    abstract protected function onServiceOpen($connectionId);
-
-    abstract protected function onServiceClose($connectionId);
 }
