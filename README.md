@@ -4,8 +4,10 @@ Simple websocket server on php.
 
 #####Features:
 * server works with socket_select, pecl/event or pecl/libevent.
-* you can run multiple processes (one master and several workers).
+* you can run multiple processes (one master and several workers or microservices architecture).
 * integration with your framework.
+
+#####Documentation https://github.com/morozovsk/websocket/wiki
 
 #####Examples https://github.com/morozovsk/websocket-examples
 * chat - simple chat (single daemon) (live demo: http://sharoid.ru/chat.html )
