@@ -10,7 +10,16 @@ class Test
     }
 
     public function start() {
-        for ($i=0, $j=0; $i<=1500; $i++) {
+        for ($i=0; $i < $this->config['workers']-1; $i++) {
+            $pid = pcntl_fork();//создаём форк
+            if ($pid == -1) {
+                die("error: pcntl_fork\r\n");
+            } elseif (!$pid) {//воркер
+                break;
+            }
+        }
+
+        for ($i=0, $j=0; $i<=$this->config['clients']; $i++) {
             $client = @stream_socket_client($this->config['websocket'], $errorNumber, $errorString, 1);
 
             if ($client) {
@@ -22,6 +31,7 @@ class Test
                 $i--;
                 $j++;
                 if ($j && $j % 100 == 0) echo "success: $i, failure: $j\r\n";
+                if ($j == $this->config['clients']) break;
             }
         }
 
@@ -48,7 +58,21 @@ class Test
                         fwrite($this->clients[rand(0, 1000)], $data);
                     }*/
                 }
+            } else {
+                break;
             }
         }
     }
+}
+
+if (!empty($argv[1]) && $argv[1] == 'start' && !empty($argv[2]) &&
+    !empty($argv[3]) && $argv[3] >= 1 && $argv[3] <= 1000 &&
+    !empty($argv[4]) && $argv[4] >= 1 && $argv[4] <= 1000
+) {
+    $config = [
+        'websocket' => $argv[2],
+        'clients' => intval($argv[3]),
+        'workers' => intval($argv[4]),
+    ];
+    (new Test($config))->start();
 }
