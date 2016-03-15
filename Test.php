@@ -37,8 +37,7 @@ class Test
 
         while (true) {
             //подготавливаем массив всех сокетов, которые нужно обработать
-            $read = $this->clients;
-            //$read[] = $service;
+            $read = array_slice($this->clients, 0, 1000);
 
             stream_select($read, $write, $except, null);//обновляем массив сокетов, которые можно обработать
 
@@ -65,9 +64,10 @@ class Test
     }
 }
 
-if (!empty($argv[1]) && $argv[1] == 'start' && !empty($argv[2]) &&
-    !empty($argv[3]) && $argv[3] >= 1 && $argv[3] <= 1000 &&
-    !empty($argv[4]) && $argv[4] >= 1 && $argv[4] <= 1000
+if (!empty($argv[1]) && $argv[1] == 'start' &&
+    !empty($argv[2]) &&
+    !empty($argv[3]) && $argv[3] >= 1 &&
+    !empty($argv[4]) && $argv[4] >= 1
 ) {
     $config = [
         'websocket' => $argv[2],
