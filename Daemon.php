@@ -11,7 +11,7 @@ abstract class Daemon extends Generic
         $this->_server = $server;
         $this->_service = $service;
         $this->_master = $master;
-        $this->pid = posix_getpid();
+        $this->pid = (function_exists('posix_getpid') ? posix_getpid() : getmypid());
     }
 
     protected function _onOpen($connectionId) {
