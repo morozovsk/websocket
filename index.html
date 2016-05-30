@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>php websocket server by morozovsk</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">php websocket server</h1>
+      <h2 class="project-tagline">simple php websocket server + demos + yii/yii2 integration + php 7 support</h2>
+      <a href="https://github.com/morozovsk/websocket" class="btn">View on GitHub</a>
+      <a href="https://github.com/morozovsk/websocket/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/morozovsk/websocket/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <p>Simple websocket server on php that can handle 100000 connections or more.</p>
+
+<p>"composer require morozovsk/websocket"</p>
+
+<h5>
+<a id="features" class="anchor" href="#features" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Features:</h5>
+
+<ul>
+<li>server works with socket_select, pecl/event or pecl/libevent.</li>
+<li>you can run multiple processes (one master and several workers or microservices architecture).</li>
+<li>integration with your framework.</li>
+</ul>
+
+<h5>
+<a id="documentation-httpsgithubcommorozovskwebsocketwiki" class="anchor" href="#documentation-httpsgithubcommorozovskwebsocketwiki" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Documentation <a href="https://github.com/morozovsk/websocket/wiki">https://github.com/morozovsk/websocket/wiki</a>
+</h5>
+
+<h5>
+<a id="examples-httpsgithubcommorozovskwebsocket-examples" class="anchor" href="#examples-httpsgithubcommorozovskwebsocket-examples" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Examples <a href="https://github.com/morozovsk/websocket-examples">https://github.com/morozovsk/websocket-examples</a>
+</h5>
+
+<ul>
+<li>chat - simple chat (single daemon) (live demo: <a href="http://sharoid.ru/chat.html">http://sharoid.ru/chat.html</a> )</li>
+<li>chat2 - chat (master + worker) (live demo: <a href="http://sharoid.ru/chat2.html">http://sharoid.ru/chat2.html</a> )</li>
+<li>chat3 - chat (single daemon + script who can send personal message by clientId, userId or PHPSESSID)</li>
+<li>game - simple real time game (live demo: <a href="http://sharoid.ru/game.html">http://sharoid.ru/game.html</a> )</li>
+<li>game2 - real time game (live demo: <a href="http://sharoid.ru/game2.html">http://sharoid.ru/game2.html</a> ) (port of node.js game: <a href="https://github.com/amikstrike/wn">https://github.com/amikstrike/wn</a>)</li>
+</ul>
+
+<p>Run from console:</p>
+
+<ul>
+<li>start: "php index.php start" or "nohup php index.php start &amp;"</li>
+<li>stop: "php index.php stop"</li>
+<li>restart: "php index.php restart" or "nohup php index.php restart &amp;"</li>
+</ul>
+
+<h5>
+<a id="yii2-websocket-httpsgithubcommorozovskyii2-websocket" class="anchor" href="#yii2-websocket-httpsgithubcommorozovskyii2-websocket" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>yii2-websocket <a href="https://github.com/morozovsk/yii2-websocket">https://github.com/morozovsk/yii2-websocket</a>
+</h5>
+
+<h5>
+<a id="how-it-work-for-russian-speakers" class="anchor" href="#how-it-work-for-russian-speakers" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>How it work (for russian speakers):</h5>
+
+<ul>
+<li><a href="http://habrahabr.ru/company/ifree/blog/209864/">http://habrahabr.ru/company/ifree/blog/209864/</a></li>
+<li><a href="http://habrahabr.ru/company/ifree/blog/210228/">http://habrahabr.ru/company/ifree/blog/210228/</a></li>
+<li><a href="http://habrahabr.ru/company/ifree/blog/211504/">http://habrahabr.ru/company/ifree/blog/211504/</a></li>
+</ul>
+
+<h5>
+<a id="fork-for-laravel-4" class="anchor" href="#fork-for-laravel-4" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Fork for Laravel 4:</h5>
+
+<ul>
+<li><a href="https://github.com/Cherry-Pie/websocket">https://github.com/Cherry-Pie/websocket</a></li>
+</ul>
+
+<h5>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>License</h5>
+
+<p>(The MIT License)</p>
+
+<p>Copyright (c) 2014 Vladimir Goncharov</p>
+
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the 'Software'), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</p>
+
+<p>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</p>
+
+<p>THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/morozovsk/websocket">php websocket server</a> is maintained by <a href="https://github.com/morozovsk">morozovsk</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
