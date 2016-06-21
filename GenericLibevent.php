@@ -13,13 +13,13 @@ abstract class GenericLibevent
     protected $_server = null;
     protected $_service = null;
     protected $_master = null;
-    protected $_read = array();//буферы чтения
-    protected $_write = array();//буферы заииси
+    protected $_read = array();//read buffers
+    protected $_write = array();//write buffers
     private $base = null;
     private $event = null;
     private $service_event = null;
     private $master_event = null;
-    private $buffers = array();//буферы событий
+    private $buffers = array();//event buffers
     public $timer = null;
 
     public function start() {
@@ -110,25 +110,25 @@ abstract class GenericLibevent
 
     private function onRead($buffer, $connectionId) {
         if (isset($this->services[$connectionId])) {
-            if (is_null($this->_read($connectionId))) { //соединение было закрыто или превышен размер буфера
+            if (is_null($this->_read($connectionId))) { //connection has been closed or the buffer was overwhelmed
                 $this->close($connectionId);
                 return;
             } else {
                 while ($data = $this->_readFromBuffer($connectionId)) {
-                    $this->onServiceMessage($connectionId, $data); //вызываем пользовательский сценарий
+                    $this->onServiceMessage($connectionId, $data); //call user handler
                 }
             }
         } elseif ($this->getIdByConnection($this->_master) == $connectionId) {
-            if (is_null($this->_read($connectionId))) { //соединение было закрыто или превышен размер буфера
+            if (is_null($this->_read($connectionId))) { //connection has been closed or the buffer was overwhelmed
                 $this->close($connectionId);
                 return;
             } else {
                 while ($data = $this->_readFromBuffer($connectionId)) {
-                    $this->onMasterMessage($data); //вызываем пользовательский сценарий
+                    $this->onMasterMessage($data); //call user handler
                 }
             }
         } else {
-            if (!$this->_read($connectionId)) { //соединение было закрыто или превышен размер буфера
+            if (!$this->_read($connectionId)) { //connection has been closed or the buffer was overwhelmed
                 $this->close($connectionId);
             } else {
                 $this->_onMessage($connectionId);
@@ -174,7 +174,7 @@ abstract class GenericLibevent
 
         if (!strlen($data)) return;
 
-        @$this->_read[$connectionId] .= $data;//добавляем полученные данные в буфер чтения
+        @$this->_read[$connectionId] .= $data;//add the data into the read buffer
         return strlen($this->_read[$connectionId]) < self::MAX_SOCKET_BUFFER_SIZE;
     }
 }
