@@ -25,7 +25,7 @@ abstract class GenericSelect
         }
 
         while (true) {
-            //prepare an array of sockets that need to be processed
+            //prepare the array of sockets that need to be processed
             $read = $this->clients + $this->services;
 
             if ($this->_server) {
@@ -52,7 +52,7 @@ abstract class GenericSelect
 
             if ($this->_write) {
                 foreach ($this->_write as $connectionId => $buffer) {
-                    if ($buffer) {//var_export($buffer);
+                    if ($buffer) {
                         $write[] = $this->getConnectionById($connectionId);
                     }
                 }
@@ -70,14 +70,14 @@ abstract class GenericSelect
 
             if ($read) {//data were obtained from the connected clients
                 foreach ($read as $client) {
-                    if ($this->_server == $client) { //the server socket has received a request from a new client
+                    if ($this->_server == $client) { //the server socket got a request from a new client
                         if ((count($this->clients) + count($this->services) < self::MAX_SOCKETS) && ($client = @stream_socket_accept($this->_server, 0))) {
                             stream_set_blocking($client, 0);
                             $clientId = $this->getIdByConnection($client);
                             $this->clients[$clientId] = $client;
                             $this->_onOpen($clientId);
                         }
-                    } elseif ($this->_service == $client) { //the local socket has received a request from a new client
+                    } elseif ($this->_service == $client) { //the local socket got a request from a new client
                         if ((count($this->clients) + count($this->services) < self::MAX_SOCKETS) && ($client = @stream_socket_accept($this->_service, 0))) {
                             stream_set_blocking($client, 0);
                             $clientId = $this->getIdByConnection($client);
@@ -87,7 +87,7 @@ abstract class GenericSelect
                     } else {
                         $connectionId = $this->getIdByConnection($client);
                         if (in_array($client, $this->services)) {
-                            if (is_null($this->_read($connectionId))) { //connection has been closed or the buffer was overwhelmed
+                            if (is_null($this->_read($connectionId))) { //connection has been closed or the buffer was overflow
                                 $this->close($connectionId);
                                 continue;
                             }
@@ -96,7 +96,7 @@ abstract class GenericSelect
                                 $this->onServiceMessage($connectionId, $data); //call user handler
                             }
                         } elseif ($this->_master == $client) {
-                            if (is_null($this->_read($connectionId))) { //connection has been closed or the buffer was overwhelmed
+                            if (is_null($this->_read($connectionId))) { //connection has been closed or the buffer was overflow
                                 $this->close($connectionId);
                                 continue;
                             }
