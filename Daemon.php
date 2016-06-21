@@ -15,21 +15,21 @@ abstract class Daemon extends Generic
     }
 
     protected function _onOpen($connectionId) {
-        $this->_handshakes[$connectionId] = '';//отмечаем, что нужно сделать рукопожатие
+        $this->_handshakes[$connectionId] = '';//mark the connection that it needs a handshake
     }
 
     protected function _onMessage($connectionId) {
         if (isset($this->_handshakes[$connectionId])) {
-            if ($this->_handshakes[$connectionId]) {//если уже было получено рукопожатие от клиента
-                return;//то до отправки ответа от сервера читать здесь пока ничего не надо
+            if ($this->_handshakes[$connectionId]) {//if the client has already made a handshake
+                return;//then there does not need to read before sending the response from the server
             }
 
             if (!$this->_handshake($connectionId)) {
                 $this->close($connectionId);
             }
         } else {
-            while (($data = $this->_decode($connectionId)) && mb_check_encoding($data['payload'], 'utf-8')) {//декодируем буфер (в нём может быть несколько сообщений)
-                $this->onMessage($connectionId, $data['payload'], $data['type']);//вызываем пользовательский сценарий
+            while (($data = $this->_decode($connectionId)) && mb_check_encoding($data['payload'], 'utf-8')) {//decode buffer (there may be multiple messages)
+                $this->onMessage($connectionId, $data['payload'], $data['type']);//call user handler
             }
         }
     }
@@ -38,11 +38,11 @@ abstract class Daemon extends Generic
         if (isset($this->_handshakes[$connectionId])) {
             unset($this->_handshakes[$connectionId]);
         } elseif (isset($this->clients[$connectionId])) {
-            $this->onClose($connectionId);//вызываем пользовательский сценарий
+            $this->onClose($connectionId);//call user handler
         } elseif (isset($this->services[$connectionId])) {
-            $this->onServiceClose($connectionId);//вызываем пользовательский сценарий
+            $this->onServiceClose($connectionId);//call user handler
         } elseif ($this->getIdByConnection($this->_master) == $connectionId) {
-            $this->onMasterClose($connectionId);//вызываем пользовательский сценарий
+            $this->onMasterClose($connectionId);//call user handler
         }
 
         parent::close($connectionId);
@@ -78,7 +78,7 @@ abstract class Daemon extends Generic
     }
 
     protected function _handshake($connectionId) {
-        //считываем загаловки из соединения
+        //read the headers from the connection
         if (!strpos($this->_read[$connectionId], "\r\n\r\n")) {
             return true;
         }
@@ -105,7 +105,7 @@ abstract class Daemon extends Generic
 
         $this->_read[$connectionId] = '';
 
-        //отправляем заголовок согласно протоколу вебсокета
+        //send a header according to the protocol websocket
         $SecWebSocketAccept = base64_encode(pack('H*', sha1($match[1] . '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')));
         $upgrade = "HTTP/1.1 101 Web Socket Protocol Handshake\r\n" .
             "Upgrade: websocket\r\n" .
