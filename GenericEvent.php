@@ -13,12 +13,12 @@ abstract class GenericEvent
     protected $_server = null;
     protected $_service = null;
     protected $_master = null;
-    protected $_read = array();//буферы чтения
-    protected $_write = array();//буферы заииси
+    protected $_read = array();//read buffers
+    protected $_write = array();//write buffers
     private $base = NULL;
     private $event = NULL;
     private $service_event = NULL;
-    private $buffers = array();//буферы событий
+    private $buffers = array();//event buffers
     public $timer = null;
 
     public function start() {
@@ -54,7 +54,7 @@ abstract class GenericEvent
         $buffer = new \EventBufferEvent($this->base, $connectionId, \EventBufferEvent::OPT_CLOSE_ON_FREE);
         $buffer->setCallbacks(array($this, "onRead"), array($this, "onWrite"), array($this, "onError"), $connectionId);
         $buffer->enable(\Event::READ | \Event::WRITE | \Event::PERSIST);
-        $this->clients[$connectionId] = $connectionId;//var_dump($connection);
+        $this->clients[$connectionId] = $connectionId;
         $this->buffers[$connectionId] = $buffer;
 
         $this->_onOpen($connectionId);
@@ -64,7 +64,7 @@ abstract class GenericEvent
         $buffer = new \EventBufferEvent($this->base, $connectionId, \EventBufferEvent::OPT_CLOSE_ON_FREE);
         $buffer->setCallbacks(array($this, "onRead"), array($this, "onWrite"), array($this, "onError"), $connectionId);
         $buffer->enable(\Event::READ | \Event::WRITE | \Event::PERSIST);
-        $this->services[$connectionId] = $connectionId;//var_dump($connectionId);
+        $this->services[$connectionId] = $connectionId;
         $this->buffers[$connectionId] = $buffer;
 
         $this->onServiceOpen($connectionId);
@@ -72,25 +72,25 @@ abstract class GenericEvent
 
     public function onRead($buffer, $connectionId) {
         if (isset($this->services[$connectionId])) {
-            if (is_null($this->_read($connectionId))) { //соединение было закрыто
+            if (is_null($this->_read($connectionId))) { //connection has been closed
                 $this->close($connectionId);
                 return;
             } else {
                 while ($data = $this->_readFromBuffer($connectionId)) {
-                    $this->onServiceMessage($connectionId, $data); //вызываем пользовательский сценарий
+                    $this->onServiceMessage($connectionId, $data); //call user handler
                 }
             }
         } elseif ($this->getIdByConnection($this->_master) == $connectionId) {
-            if (is_null($this->_read($connectionId))) { //соединение было закрыто или превышен размер буфера
+            if (is_null($this->_read($connectionId))) { //connection has been closed or the buffer was overwhelmed
                 $this->close($connectionId);
                 return;
             } else {
                 while ($data = $this->_readFromBuffer($connectionId)) {
-                    $this->onMasterMessage($data); //вызываем пользовательский сценарий
+                    $this->onMasterMessage($data); //call user handler
                 }
             }
         } else {
-            if (!$this->_read($connectionId)) { //соединение было закрыто или превышен размер буфера
+            if (!$this->_read($connectionId)) { //connection has been closed or the buffer was overwhelmed
                 $this->close($connectionId);
             } else {
                 $this->_onMessage($connectionId);
@@ -134,7 +134,7 @@ abstract class GenericEvent
 
         if (!strlen($data)) return;
 
-        @$this->_read[$connectionId] .= $data;//добавляем полученные данные в буфер чтения
+        @$this->_read[$connectionId] .= $data;//add the data into the read buffer
         return strlen($this->_read[$connectionId]) < self::MAX_SOCKET_BUFFER_SIZE;
     }
 }
