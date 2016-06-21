@@ -13,8 +13,8 @@ abstract class GenericSelect
     protected $_server = null;
     protected $_service = null;
     protected $_master = null;
-    protected $_read = array();//буферы чтения
-    protected $_write = array();//буферы заииси
+    protected $_read = array();//read buffers
+    protected $_write = array();//write buffers
     public $timer = null;
 
     public function start() {
@@ -25,7 +25,7 @@ abstract class GenericSelect
         }
 
         while (true) {
-            //подготавливаем массив всех сокетов, которые нужно обработать
+            //prepare an array of sockets that need to be processed
             $read = $this->clients + $this->services;
 
             if ($this->_server) {
@@ -60,7 +60,7 @@ abstract class GenericSelect
 
             $except = $read;
 
-            stream_select($read, $write, $except, null);//обновляем массив сокетов, которые можно обработать
+            stream_select($read, $write, $except, null);//update the array of sockets that can be processed
 
             if ($this->timer && in_array($timer, $read)) {
                 unset($read[array_search($timer, $read)]);
@@ -68,16 +68,16 @@ abstract class GenericSelect
                 $this->onTimer();
             }
 
-            if ($read) {//пришли данные от подключенных клиентов
+            if ($read) {//data were obtained from the connected clients
                 foreach ($read as $client) {
-                    if ($this->_server == $client) { //на серверный сокет пришёл запрос от нового клиента
+                    if ($this->_server == $client) { //the server socket has received a request from a new client
                         if ((count($this->clients) + count($this->services) < self::MAX_SOCKETS) && ($client = @stream_socket_accept($this->_server, 0))) {
                             stream_set_blocking($client, 0);
                             $clientId = $this->getIdByConnection($client);
                             $this->clients[$clientId] = $client;
                             $this->_onOpen($clientId);
                         }
-                    } elseif ($this->_service == $client) { //на локальный сокет пришёл запрос от нового клиента
+                    } elseif ($this->_service == $client) { //the local socket has received a request from a new client
                         if ((count($this->clients) + count($this->services) < self::MAX_SOCKETS) && ($client = @stream_socket_accept($this->_service, 0))) {
                             stream_set_blocking($client, 0);
                             $clientId = $this->getIdByConnection($client);
@@ -87,25 +87,25 @@ abstract class GenericSelect
                     } else {
                         $connectionId = $this->getIdByConnection($client);
                         if (in_array($client, $this->services)) {
-                            if (is_null($this->_read($connectionId))) { //соединение было закрыто
+                            if (is_null($this->_read($connectionId))) { //connection has been closed or the buffer was overwhelmed
                                 $this->close($connectionId);
                                 continue;
                             }
 
                             while ($data = $this->_readFromBuffer($connectionId)) {
-                                $this->onServiceMessage($connectionId, $data); //вызываем пользовательский сценарий
+                                $this->onServiceMessage($connectionId, $data); //call user handler
                             }
                         } elseif ($this->_master == $client) {
-                            if (is_null($this->_read($connectionId))) { //соединение было закрыто
+                            if (is_null($this->_read($connectionId))) { //connection has been closed or the buffer was overwhelmed
                                 $this->close($connectionId);
                                 continue;
                             }
 
                             while ($data = $this->_readFromBuffer($connectionId)) {
-                                $this->onMasterMessage($data); //вызываем пользовательский сценарий
+                                $this->onMasterMessage($data); //call user handler
                             }
                         } else {
-                            if (!$this->_read($connectionId)) { //соединение было закрыто или превышен размер буфера
+                            if (!$this->_read($connectionId)) { //connection has been closed or the buffer was overwhelmed
                                 $this->close($connectionId);
                                 continue;
                             }
@@ -118,7 +118,7 @@ abstract class GenericSelect
 
             if ($write) {
                 foreach ($write as $client) {
-                    if (is_resource($client)) {//проверяем, что мы его ещё не закрыли во время чтения
+                    if (is_resource($client)) {//verify that the connection is not closed during the reading
                         $this->_sendBuffer($client);
                     }
                 }
@@ -166,23 +166,23 @@ abstract class GenericSelect
 
         if (!strlen($data)) return;
 
-        @$this->_read[$connectionId] .= $data;//добавляем полученные данные в буфер чтения
+        @$this->_read[$connectionId] .= $data;//add the data into the read buffer
         return strlen($this->_read[$connectionId]) < self::MAX_SOCKET_BUFFER_SIZE;
     }
 
     protected function _createTimer() {
         $pair = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
 
-        $pid = pcntl_fork();//создаём форк
+        $pid = pcntl_fork();//create a fork
 
         if ($pid == -1) {
             die("error: pcntl_fork\r\n");
-        } elseif ($pid) { //родитель
+        } elseif ($pid) { //parent
             fclose($pair[0]);
-            return $pair[1];//один из пары будет в родителе
-        } else { //дочерний процесс
+            return $pair[1];//one of the pair will be in the parent
+        } else { //child process
             fclose($pair[1]);
-            $parent = $pair[0];//второй в дочернем процессе
+            $parent = $pair[0];//second of the pair will be in the child
 
             while (true) {
                 fwrite($parent, '1');
