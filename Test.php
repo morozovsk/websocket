@@ -11,10 +11,10 @@ class Test
 
     public function start() {
         for ($i=0; $i < $this->config['workers']-1; $i++) {
-            $pid = pcntl_fork();//создаём форк
+            $pid = pcntl_fork();//create the fork
             if ($pid == -1) {
                 die("error: pcntl_fork\r\n");
-            } elseif (!$pid) {//воркер
+            } elseif (!$pid) {//worker
                 break;
             }
         }
@@ -36,12 +36,12 @@ class Test
         }
 
         while (true) {
-            //подготавливаем массив всех сокетов, которые нужно обработать
+            //prepare an array of sockets that need to be processed
             $read = array_slice($this->clients, 0, 1000);
 
-            stream_select($read, $write, $except, null);//обновляем массив сокетов, которые можно обработать
+            stream_select($read, $write, $except, null);//update the array of sockets that can be processed
 
-            if ($read) {//пришли данные от подключенных клиентов
+            if ($read) {//obtained data from connected clients
                 foreach ($read as $client) {
                     $data = fread($client, 100000);
 
