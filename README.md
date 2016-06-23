@@ -23,7 +23,7 @@ Run from console:
 
 #####yii2-websocket https://github.com/morozovsk/yii2-websocket
 
-#####How it work (for russian speakers):
+#####How it works (for russian speakers):
 * http://habrahabr.ru/company/ifree/blog/209864/
 * http://habrahabr.ru/company/ifree/blog/210228/
 * http://habrahabr.ru/company/ifree/blog/211504/
