@@ -14,7 +14,7 @@ Simple websocket server on php that can handle 100000 connections or more.
 * chat2 - chat (master + worker) (live demo: http://sharoid.ru/chat2.html )
 * chat3 - chat (single daemon + script who can send personal message by clientId, userId or PHPSESSID)
 * game - simple real time game (live demo: http://sharoid.ru/game.html )
-* game2 - real time game (live demo: http://sharoid.ru/game2.html ) (port of node.js game: https://github.com/amikstrike/wn)
+* game2 - real time game (<strike>live demo: http://sharoid.ru/game2.html</strike> ) (port of node.js game: https://github.com/amikstrike/wn)
 
 Run from console:
 * start: "php index.php start" or "nohup php index.php start &"
