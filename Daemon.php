@@ -110,7 +110,7 @@ abstract class Daemon extends Generic
         $upgrade = "HTTP/1.1 101 Web Socket Protocol Handshake\r\n" .
             "Upgrade: websocket\r\n" .
             "Connection: Upgrade\r\n" .
-            "Sec-WebSocket-Accept:$SecWebSocketAccept\r\n\r\n";
+            "Sec-WebSocket-Accept: {$SecWebSocketAccept}\r\n\r\n";
 
         $this->_write($connectionId, $upgrade);
         unset($this->_handshakes[$connectionId]);
