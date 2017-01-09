@@ -64,7 +64,7 @@ abstract class Daemon extends Generic
     }
 
     protected function sendToClient($connectionId, $data, $type = 'text') {
-        if (!isset($this->_handshakes[$connectionId])) {
+        if (!isset($this->_handshakes[$connectionId]) && isset($this->clients[$connectionId])) {
             $this->_write($connectionId, $this->_encode($data, $type));
         }
     }
