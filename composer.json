@@ -6,7 +6,7 @@
         "php": ">=5.3.0",
         "ext-mbstring": "*"
     },
-    "version": "4.2.1",
+    "version": "4.2.2",
     "license": "MIT",
     "homepage": "http://sharoid.ru/game.html",
     "authors": [
