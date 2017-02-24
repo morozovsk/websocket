@@ -130,11 +130,11 @@ abstract class GenericEvent
     }
 
     protected function _read($connectionId) {
-        $data = $this->buffers[$connectionId]->read(self::SOCKET_BUFFER_SIZE);
-
-        if (!strlen($data)) return;
-
-        @$this->_read[$connectionId] .= $data;//add the data into the read buffer
-        return strlen($this->_read[$connectionId]) < self::MAX_SOCKET_BUFFER_SIZE;
+        $length = 0;
+        while ($data = $this->buffers[$connectionId]->read(self::SOCKET_BUFFER_SIZE)) {//add the data into the read buffer
+            @$this->_read[$connectionId] .= $data;
+            $length += strlen($data);
+        }
+        return $length > 0 && strlen($this->_read[$connectionId]) < self::MAX_SOCKET_BUFFER_SIZE;
     }
 }
