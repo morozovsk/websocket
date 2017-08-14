@@ -2,7 +2,7 @@ Simple websocket server on php that can handle 100000 connections or more.
 
 "composer require morozovsk/websocket"
 
-###This library works, but I will not develop and support it because I will use https://github.com/walkor/Workerman
+<h1>#####This library works, but I will not develop and support it because I will use https://github.com/walkor/Workerman</h1>
 
 #####Features:
 * server works with socket_select, pecl/event or pecl/libevent.
