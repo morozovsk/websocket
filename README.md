@@ -5,14 +5,14 @@ Simple websocket server on php that can handle 100000 connections or more.
 <h1>This library works, but I will not develop and support it because I will use https://github.com/walkor/Workerman</h1>
 <h2>Also I recomend https://github.com/swoole/swoole-src/</h2>
 
-#####Features:
+##### Features:
 * server works with socket_select, pecl/event or pecl/libevent.
 * you can run multiple processes (one master and several workers or microservices architecture).
 * integration with your framework.
 
-#####Documentation https://github.com/morozovsk/websocket/wiki
+##### Documentation https://github.com/morozovsk/websocket/wiki
 
-#####Examples https://github.com/morozovsk/websocket-examples
+##### Examples https://github.com/morozovsk/websocket-examples
 * chat - simple chat (single daemon) (live demo: http://sharoid.ru/chat.html )
 * chat2 - chat (master + worker) (live demo: http://sharoid.ru/chat2.html )
 * chat3 - chat (single daemon + script who can send personal message by clientId, userId or PHPSESSID)
@@ -24,17 +24,17 @@ Run from console:
 * stop: "php index.php stop"
 * restart: "php index.php restart" or "nohup php index.php restart &"
 
-#####yii2-websocket https://github.com/morozovsk/yii2-websocket
+##### yii2-websocket https://github.com/morozovsk/yii2-websocket
 
-#####How it works (for russian speakers):
+##### How it works (for russian speakers):
 * http://habrahabr.ru/company/ifree/blog/209864/
 * http://habrahabr.ru/company/ifree/blog/210228/
 * http://habrahabr.ru/company/ifree/blog/211504/
 
-#####Fork for Laravel 4:
+##### Fork for Laravel 4:
 * https://github.com/Cherry-Pie/websocket
 
-#####License
+##### License
 
 (The MIT License)
 
