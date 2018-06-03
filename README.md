@@ -13,11 +13,11 @@ Simple websocket server on php that can handle 100000 connections or more.
 ##### Documentation https://github.com/morozovsk/websocket/wiki
 
 ##### Examples https://github.com/morozovsk/websocket-examples
-* chat - simple chat (single daemon) (live demo: http://sharoid.ru/chat.html )
-* chat2 - chat (master + worker) (live demo: http://sharoid.ru/chat2.html )
+* chat - simple chat (single daemon)
+* chat2 - chat (master + worker)
 * chat3 - chat (single daemon + script who can send personal message by clientId, userId or PHPSESSID)
-* game - simple real time game (live demo: http://sharoid.ru/game.html )
-* game2 - real time game (<strike>live demo: http://sharoid.ru/game2.html</strike> ) (port of node.js game: https://github.com/amikstrike/wn)
+* game - simple real time game
+* game2 - real time game (port of node.js game: https://github.com/amikstrike/wn)
 
 Run from console:
 * start: "php index.php start" or "nohup php index.php start &"
