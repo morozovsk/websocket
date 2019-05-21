@@ -62,7 +62,7 @@ class Server
             class_alias('morozovsk\websocket\GenericSelect', 'morozovsk\websocket\Generic');
         }
 
-        file_put_contents($this->config['pid'], posix_getpid());
+        file_put_contents($this->config['pid'], (function_exists('posix_getpid') ? posix_getpid() : getmypid()));
 
         //list($pid, $master, $workers) = $this->spawnWorkers();//create child processes
 
