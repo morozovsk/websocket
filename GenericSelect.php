@@ -146,8 +146,11 @@ abstract class GenericSelect
 
     protected function _sendBuffer($connect) {
         $connectionId = $this->getIdByConnection($connect);
-        $written = fwrite($connect, $this->_write[$connectionId], self::SOCKET_BUFFER_SIZE);
-        $this->_write[$connectionId] = substr($this->_write[$connectionId], $written);
+        $written = @fwrite($connect, $this->_write[$connectionId], self::SOCKET_BUFFER_SIZE);
+
+        if ($written) {
+            $this->_write[$connectionId] = substr($this->_write[$connectionId], $written);
+        }
     }
 
     protected function _readFromBuffer($connectionId) {
